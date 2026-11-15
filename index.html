@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pianomaps</title>
+<meta name="description" content="Find, play and rate public pianos around the world.">
+<meta name="theme-color" content="#ffffff">
+<meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Pianomaps"><meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<script>(function(){try{var t=localStorage.getItem("pm_theme")||"system",d=t==="dark"||(t==="system"&&window.matchMedia&&matchMedia("(prefers-color-scheme: dark)").matches),r=document.documentElement;if(t!=="system")r.setAttribute("data-theme",t);if(d)r.setAttribute("data-dark","")}catch(e){}})()</script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<style>
+:root{--bg:#fff;--fg:#111;--mut:#707070;--line:#e9e9e9;--acc:#e53127;--sh:0 1px 3px rgba(0,0,0,.14);color-scheme:light}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#000;--fg:#f4f4f4;--mut:#8f8f8f;--line:#242424;--acc:#ff4538;--sh:0 1px 3px rgba(0,0,0,.6);color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#000;--fg:#f4f4f4;--mut:#8f8f8f;--line:#242424;--acc:#ff4538;--sh:0 1px 3px rgba(0,0,0,.6);color-scheme:dark}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:var(--fg);background:var(--bg);letter-spacing:-.01em;-webkit-font-smoothing:antialiased;transition:background .3s,color .3s}
+#map{position:fixed;inset:0;background:var(--bg)}
+[hidden]{display:none!important}
+button{font:inherit;color:inherit;cursor:pointer;transition:transform .12s,background .2s,color .2s,border-color .2s,opacity .2s}
+button:active,.fab:active{transform:scale(.95)}
+/* header */
+.top{position:fixed;z-index:500;left:12px;right:12px;top:calc(12px + env(safe-area-inset-top,0px));display:flex;gap:8px}
+.logo{height:46px;padding:0 15px;border-radius:999px;background:var(--bg);border:1px solid var(--line);box-shadow:var(--sh);display:flex;align-items:center;cursor:pointer}
+.mark{height:22px;width:auto}
+#q{flex:1;min-width:0;height:46px;border:1px solid var(--line);border-radius:999px;padding:0 18px;background:var(--bg);color:var(--fg);font:inherit;font-size:16px;box-shadow:var(--sh);outline:0;margin:0}
+#q:focus{border-color:var(--fg)}
+.fab{width:46px;height:46px;border:1px solid var(--line);border-radius:50%;background:var(--bg);color:var(--fg);box-shadow:var(--sh);display:grid;place-items:center;padding:0}
+.fab svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+#acct{flex:none;font-size:16px;font-weight:600;position:relative;overflow:visible}
+.fabs{position:fixed;z-index:500;right:12px;bottom:calc(20px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:10px;align-items:flex-end}
+.fab.main{width:auto;height:50px;padding:0 22px;border-radius:999px;background:var(--fg);color:var(--bg);border-color:var(--fg);font-weight:600;font-size:15px}
+@media(hover:hover){.fab:hover{transform:translateY(-2px)}}
+/* sheet */
+.sheet{position:fixed;z-index:700;left:0;right:0;bottom:0;max-height:80dvh;overflow:auto;background:var(--bg);border:1px solid var(--line);border-bottom:0;border-radius:22px 22px 0 0;padding:12px 20px calc(20px + env(safe-area-inset-bottom,0px));box-shadow:0 -8px 30px rgba(0,0,0,.12);transform:translateY(105%);transition:transform .38s cubic-bezier(.2,.9,.3,1),background .3s}
+.sheet.open{transform:none}
+@media(min-width:700px){.sheet{left:auto;width:400px;right:12px;bottom:12px;border-radius:22px;border-bottom:1px solid var(--line)}}
+.grab{width:36px;height:4px;border-radius:2px;background:var(--line);margin:0 auto 14px}
+h2{font-size:20px;font-weight:650;margin:0;letter-spacing:-.02em}
+h3{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--mut);margin:20px 0 6px}
+.mut{color:var(--mut);font-size:13px}.star{color:var(--acc)}
+p{margin:10px 0}
+input,textarea,select{width:100%;font:inherit;font-size:16px;color:var(--fg);background:transparent;border:1px solid var(--line);border-radius:12px;padding:11px 14px;margin-top:8px;outline:0;transition:border-color .2s}
+input:focus,textarea:focus,select:focus{border-color:var(--fg)}
+input[readonly]{color:var(--mut)}
+button.b,label.b,a.lnk{border:1px solid var(--line);background:none;color:var(--fg);border-radius:999px;padding:10px 18px;font-size:15px;text-decoration:none;display:inline-block;line-height:1.3}
+@media(hover:hover){button.b:hover,label.b:hover,a.lnk:hover{border-color:var(--fg)}}
+button.b.fill{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+button:disabled{opacity:.4}
+.b.sm{padding:6px 14px;font-size:13px}
+label.b{cursor:pointer}
+.acts{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;align-items:center}
+.stars button{border:0;background:none;font-size:30px;padding:0 3px;color:var(--line);line-height:1}
+.stars button.on{color:var(--acc);animation:starpop .3s}
+.stars button:hover{transform:scale(1.2)}
+@keyframes starpop{50%{transform:scale(1.3)}}
+.rev{border-top:1px solid var(--line);padding:12px 0}
+.av{display:inline-grid;place-items:center;border-radius:50%;background:var(--fg);color:var(--bg);overflow:hidden;font-weight:600;flex:none}
+.av img{width:100%;height:100%;object-fit:cover}
+.uh{display:flex;gap:14px;align-items:center}
+.badge{display:inline-block;font-size:12px;border-radius:999px;padding:1px 10px;background:var(--fg);color:var(--bg);vertical-align:middle}
+.badge.w{background:none;border:1px solid var(--acc);color:var(--acc)}
+.dot2{background:var(--acc);color:#fff;border-radius:999px;min-width:18px;height:18px;font-size:11px;display:inline-grid;place-items:center;padding:0 5px}
+.menu{display:flex;flex-direction:column;margin:14px 0 4px}
+.menu button{background:none;border:0;border-top:1px solid var(--line);font-size:16px;text-align:left;padding:15px 2px;display:flex;gap:8px;align-items:center}
+.menu button::after{content:"›";margin-left:auto;color:var(--mut)}
+.tabs{display:flex;gap:6px;margin:12px 0}
+.tabs button{flex:1;border:1px solid var(--line);background:none;border-radius:999px;padding:8px}
+.tabs button.on{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.pc{display:flex;gap:12px;align-items:center;width:100%;text-align:left;background:none;border:0;border-top:1px solid var(--line);padding:10px 0}
+.pc img,.pc>span{width:54px;height:54px;border-radius:12px;object-fit:cover;background:var(--line);display:grid;place-items:center;flex:none;font-size:20px;color:var(--mut)}
+@media(hover:hover){.pc:hover{background:var(--line)}}
+.pimg{width:100%;max-height:210px;object-fit:cover;border-radius:14px;margin-bottom:12px;display:block}
+.chk{display:flex;gap:8px;align-items:center;margin-top:12px;font-size:14px}.chk input{width:auto;margin:0}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+/* markers */
+.pm{width:26px;height:26px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:var(--fg);border:2px solid var(--bg);box-shadow:0 1px 4px rgba(0,0,0,.45);display:grid;place-items:center}
+.pm::after{content:"";width:8px;height:8px;border-radius:50%;background:var(--bg)}
+.pm.pend{background:var(--bg);border:2px dashed var(--fg)}.pm.pend::after{background:var(--fg)}
+.pm.on{background:var(--acc);border-color:var(--bg)}
+.pm.new{animation:pop .55s cubic-bezier(.3,1.7,.5,1) both}
+.pm.on{animation:hop .5s ease}
+@keyframes pop{from{transform:rotate(-45deg) scale(0);opacity:0}to{transform:rotate(-45deg) scale(1);opacity:1}}
+@keyframes hop{0%,100%{transform:rotate(-45deg)}40%{transform:rotate(-45deg) translate(-7px,7px) scale(1.12)}}
+#cross{position:fixed;z-index:600;left:50%;top:50%;transform:translate(-50%,-100%);pointer-events:none;display:none;filter:drop-shadow(0 2px 3px rgba(0,0,0,.4));animation:bob 1.2s ease-in-out infinite}
+@keyframes bob{50%{margin-top:-8px}}
+#pbar{position:fixed;z-index:650;left:12px;right:12px;bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--bg);border:1px solid var(--line);border-radius:20px;padding:14px 16px;box-shadow:0 4px 24px rgba(0,0,0,.18);display:none;animation:fadeUp .35s both}
+@media(min-width:700px){#pbar{left:auto;width:380px}}
+#banner{max-width:90vw;text-align:center;position:fixed;z-index:400;left:50%;transform:translateX(-50%);top:calc(70px + env(safe-area-inset-top,0px));color:#fff;font-size:12px;padding:4px 14px;border-radius:999px;display:none}
+#toast{position:fixed;z-index:900;left:50%;transform:translateX(-50%);bottom:calc(92px + env(safe-area-inset-bottom,0px));background:var(--fg);color:var(--bg);padding:10px 18px;border-radius:999px;font-size:14px;display:none;max-width:90vw;text-align:center;animation:fadeUp .3s both}
+#ib{position:fixed;z-index:650;left:12px;bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--bg);border:1px solid var(--line);border-radius:999px;padding:8px 8px 8px 18px;box-shadow:var(--sh);display:flex;gap:8px;align-items:center;font-size:14px;animation:fadeUp .4s both;max-width:calc(100vw - 90px)}
+/* leaflet tweaks */
+.leaflet-bar{border:1px solid var(--line)!important;box-shadow:var(--sh)!important;border-radius:14px!important;overflow:hidden}
+.leaflet-bar a{background:var(--bg)!important;color:var(--fg)!important;border-bottom:1px solid var(--line)!important}
+.leaflet-control-attribution{background:var(--bg)!important;color:var(--mut)!important;opacity:.9;font-size:10px}
+.leaflet-control-attribution a{color:var(--mut)!important}
+body.dmap .leaflet-tile-pane{filter:invert(1) hue-rotate(180deg) brightness(.95) contrast(.9)}
+/* sheet animations */
+.sheet.anim>*:not(.grab){animation:fadeUp .4s cubic-bezier(.2,.9,.3,1) both}
+.sheet.anim>*:nth-child(3){animation-delay:.04s}.sheet.anim>*:nth-child(4){animation-delay:.08s}.sheet.anim>*:nth-child(5){animation-delay:.12s}
+.sheet.anim>*:nth-child(6){animation-delay:.16s}.sheet.anim>*:nth-child(7){animation-delay:.2s}.sheet.anim>*:nth-child(n+8){animation-delay:.24s}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.sheet.anim .pc,.sheet.anim .rev,.sheet.anim .menu button{animation:fadeUp .4s both}
+.sheet.anim .pc:nth-of-type(2),.sheet.anim .menu button:nth-child(2){animation-delay:.07s}.sheet.anim .pc:nth-of-type(3),.sheet.anim .menu button:nth-child(3){animation-delay:.14s}.sheet.anim .menu button:nth-child(n+4){animation-delay:.21s}
+/* start screen */
+#intro{position:fixed;inset:0;z-index:1000;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px 24px 130px;transition:opacity .5s,visibility .5s;overflow:hidden}
+#intro.hide{opacity:0;visibility:hidden}
+.lgw{animation:float 4s 1.2s ease-in-out infinite}
+.ilogo{width:min(80vw,470px);height:auto;display:block;animation:drop .9s cubic-bezier(.3,1.4,.5,1) both}
+img.on-d{display:none}html[data-dark] img.on-l{display:none}html[data-dark] img.on-d{display:block}
+@keyframes drop{from{transform:translateY(-90px) scale(.85);opacity:0}60%{opacity:1}to{transform:none}}
+@keyframes float{50%{transform:translateY(-7px)}}
+#intro p{color:var(--mut);max-width:300px;margin:22px 0 26px;animation:fadeUp .6s .7s both}
+#intro .btns{display:flex;flex-direction:column;gap:10px;width:250px;animation:fadeUp .6s .9s both}
+#intro .btns .b{text-align:center}
+#iInstall{margin-top:14px;animation:fadeUp .4s both}
+.ipref{position:absolute;top:calc(14px + env(safe-area-inset-top,0px));right:14px;display:flex;gap:8px;z-index:2}
+#kb{position:absolute;left:0;right:0;bottom:0;height:96px;display:flex;pointer-events:none}
+.wk{flex:1;background:var(--bg);border:1px solid var(--line);border-top:0;border-radius:0 0 8px 8px;animation:press 3.2s ease-in-out infinite}
+@keyframes press{0%,72%,100%{background:var(--bg);transform:none}80%{background:var(--acc);transform:translateY(5px)}}
+.bk{position:absolute;top:0;height:58px;width:5.2%;margin-left:-2.6%;background:var(--fg);border-radius:0 0 4px 4px}
+#setup{position:fixed;inset:0;z-index:1100;background:var(--bg);display:none;align-items:center;justify-content:center;text-align:center;padding:30px}
+#setup p{color:var(--mut);max-width:340px}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div id="map"></div>
+<div id="intro">
+  <div class="ipref"><button class="b sm" id="iLang" aria-label="Language">EN</button><button class="b sm" id="iTheme" aria-label="Theme">◐</button></div>
+  <div class="lgw"><img class="ilogo on-l" src="assets/logo-light.png" alt="Pianomaps"><img class="ilogo on-d" src="assets/logo-dark.png" alt="Pianomaps"></div>
+  <p data-i18n="tag">Find, play and rate public pianos around the world.</p>
+  <div class="btns"><button class="b fill" id="iGo" data-i18n="explore">Explore the map</button><button class="b" id="iAdd" data-i18n="addA">+ Add a piano</button><button class="b" id="iLoc" data-i18n="near">Pianos near me</button></div>
+  <button class="b sm" id="iInstall" hidden data-i18n="install">Install app</button>
+  <div id="kb"></div>
+</div>
+
+<div class="top"><div class="logo" id="logo" role="button" aria-label="Menu"><img class="mark on-l" src="assets/mark-light.png" alt=""><img class="mark on-d" src="assets/mark-dark.png" alt=""></div><input id="q" type="search" placeholder="Search a city or street…" data-i18n-ph="search" enterkeyhint="search"><button class="fab" id="acct" aria-label="Account" data-i18n-aria="account"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg></button></div>
+<div id="banner"></div>
+<div id="toast"></div>
+<div id="ib" hidden><span data-i18n="installBar">Install Pianomaps as an app</span><button class="b fill sm" id="ibGo" data-i18n="install">Install app</button><button class="b sm" id="ibNo" aria-label="Close">✕</button></div>
+<div id="cross"><svg viewBox="0 0 24 32" width="34" height="44"><path d="M12 31S2 19 2 11a10 10 0 0 1 20 0c0 8-10 20-10 20Z" fill="#e53127"/><circle cx="12" cy="11" r="3.6" fill="#fff"/></svg></div>
+<div class="fabs">
+  <button class="fab" id="prefs" aria-label="Language & theme" data-i18n-aria="prefsT"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></svg></button>
+  <button class="fab" id="layer" aria-label="Map / satellite" data-i18n-aria="layer"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 3 8l9 5 9-5-9-5Z"/><path d="m3 13 9 5 9-5"/></svg></button>
+  <button class="fab" id="loc" aria-label="My location" data-i18n-aria="loc"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3.5"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg></button>
+  <button class="fab main" id="add" data-i18n="add">+ Add piano</button>
+</div>
+<div id="pbar"><b data-i18n="pbT">Move the map to the piano</b><div class="mut" data-i18n="pbH">Zoom in close to see the building.</div>
+  <div class="acts"><button class="b fill" id="pOk" data-i18n="confirm">Confirm location</button><button class="b" id="pNo" data-i18n="cancel">Cancel</button></div></div>
+<div class="sheet" id="sheet"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+(function(){var g=function(i){return document.getElementById(i)},pt=(navigator.language||"").toLowerCase().indexOf("pt")==0;
+ if(typeof L==="undefined"){var b=g("banner");b.textContent=pt?"Não foi possível carregar o mapa. Verifica a ligação ou desativa bloqueadores de conteúdo.":"The map could not load. Check your internet connection or turn off content blockers.";b.style.display="block";b.style.background="#c62828";
+  ["iGo","iAdd","iLoc"].forEach(function(i){g(i).onclick=function(){g("intro").classList.add("hide")}})}})();
+</script>
+<script>
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const ICON_USER='<svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>';
+
+// ===== language + theme =====
+const DICT={"en": {"tag": "Find, play and rate public pianos around the world.", "explore": "Explore the map", "addA": "+ Add a piano", "near": "Pianos near me", "search": "Search a city or street…", "account": "Account", "layer": "Map / satellite", "loc": "My location", "prefsT": "Language & theme", "add": "+ Add piano", "pbT": "Move the map to the piano", "pbH": "Zoom in close to see the building.", "confirm": "Confirm location", "cancel": "Cancel", "close": "Close", "noRev": "No reviews yet", "noDesc": "No description.", "addedBy": "Added by", "dir": "Directions", "markV": "Mark as visited", "visited": "✓ Visited", "waiting": "Waiting for verification", "onlyYou": " · only you and the owner can see it", "admin": "Admin", "approve": "Approve", "edit": "Edit", "del": "Delete", "delMine": "Delete my piano", "yourRev": "Your review", "ratePiano": "Rate this piano", "stars": "{n} stars", "commentPh": "Comment: tuning, hours, atmosphere…", "update": "Update", "post": "Post", "delLink": "delete", "myProfile": "My profile", "myVisits": "Places I visited", "settings": "Settings", "appearance": "Language & theme", "adminPanel": "Admin panel", "signOut": "Sign out", "owner": "Site owner", "noBio": "No description yet.", "addedTab": "Added ({n})", "visitedTab": "Visited ({n})", "privateV": "This user keeps their visited places private.", "nothing": "Nothing here yet.", "editProfile": "Edit profile", "menuBack": "‹ Menu", "pending": "Pending", "settingsT": "Settings", "changePhoto": "Change photo", "addPhoto": "Add photo", "username": "Username (unique)", "bioPh": "Tell people about yourself…", "showV": "Show the places I visited on my public profile", "save": "Save", "nameShort": "Username must have at least 3 characters.", "reserved": "That username is reserved.", "taken": "That username is already taken.", "couldNotSave": "Could not save.", "saved": "Saved ✓", "adminT": "Admin panel", "onlyYouSee": "Only you can see this.", "waitingFor": "Waiting for approval ({n})", "nothingPending": "Nothing pending", "allPianos": "All pianos ({n})", "noPianos": "No pianos yet.", "by": "by", "editT": "Edit piano", "approved": "Approved", "pendingO": "Pending", "rmPhoto": "Remove photo", "checkFields": "Check the name and coordinates.", "piApproved": "Piano approved ✓", "couldNotApprove": "Could not approve.", "confDelPiano": "Delete this piano and its reviews?", "confDelRev": "Delete this review?", "couldNotDelete": "Could not delete.", "latitude": "Latitude", "longitude": "Longitude", "signIn": "Sign in", "createAcc": "Create account", "signUp": "Sign up", "authMsg": "Sign in to add pianos, review them and keep track of places you visited.", "uniqPh": "Unique username", "emailPh": "Email", "passPh": "Password (min. 6 characters)", "google": "Continue with Google", "noAcc": "No account? Sign up", "haveAcc": "Have an account? Sign in", "forgot": "Forgot password?", "newPwT": "New password", "savePw": "Save password", "enterCreds": "Enter your email and a password with 6+ characters.", "wrong": "Something went wrong.", "created": "Account created! Check your email to confirm it, then sign in.", "enterEmail": "Enter your email first.", "resetSent": "Check your email for a reset link.", "pw6": "6+ characters, please.", "pwUpdated": "Password updated ✓", "needVisit": "Sign in to mark places as visited.", "needReview": "Sign in to post a review.", "needAdd": "Sign in to add a piano.", "choose": "Choose 1 to 5 stars.", "newPiano": "New piano", "verifyNote": " · will be published after verification", "namePh": "Name / location (e.g. Central Station)", "descPh": "Description: tuning, opening hours, access…", "savePiano": "Save piano", "nameNeeded": "Please name the piano.", "thanks": "Thanks! Your piano will appear for everyone once the owner verifies it.", "loadErr": "Could not load data.", "imgErr": "Could not read that image.", "locErr": "Could not get your location. Check permissions.", "notFound": "Place not found.", "searchErr": "Search error.", "unknown": "Unknown", "localProf": "Profile", "language": "Language", "langAuto": "Auto", "theme": "Theme", "themeSys": "System", "themeLight": "Light", "themeDark": "Dark", "install": "Install app", "installBar": "Install Pianomaps as an app", "you": "You", "name": "Name", "profileNote": "Saved on this device", "sendVerif": "Send for verification", "onDevice": "Only on this device", "onDeviceHint": "Only you can see this piano for now. Send it for verification to make it public.", "backup": "Backup", "backupP": "Your pianos, reviews and profile live in this browser. Export a file to keep a copy or move them to another device.", "exportB": "Export my data", "importB": "Import data", "imported": "Imported ✓", "importErr": "That file could not be imported.", "copied": "Suggestion copied. Send it to the site owner.", "savedDevice": "Saved on this device. Tap “Send for verification” to make it public."}, "pt": {"tag": "Encontra, toca e avalia pianos públicos em todo o mundo.", "explore": "Explorar o mapa", "addA": "+ Adicionar um piano", "near": "Pianos perto de mim", "search": "Procurar cidade ou rua…", "account": "Conta", "layer": "Mapa / satélite", "loc": "A minha localização", "prefsT": "Idioma e tema", "add": "+ Adicionar piano", "pbT": "Move o mapa até ao piano", "pbH": "Aproxima bem para ver o edifício.", "confirm": "Confirmar local", "cancel": "Cancelar", "close": "Fechar", "noRev": "Ainda sem avaliações", "noDesc": "Sem descrição.", "addedBy": "Adicionado por", "dir": "Como chegar", "markV": "Marcar como visitado", "visited": "✓ Visitado", "waiting": "A aguardar verificação", "onlyYou": " · só tu e o dono podem ver", "admin": "Admin", "approve": "Aprovar", "edit": "Editar", "del": "Eliminar", "delMine": "Eliminar o meu piano", "yourRev": "A tua avaliação", "ratePiano": "Avaliar este piano", "stars": "{n} estrelas", "commentPh": "Comentário: afinação, horário, ambiente…", "update": "Atualizar", "post": "Publicar", "delLink": "eliminar", "myProfile": "O meu perfil", "myVisits": "Locais que visitei", "settings": "Definições", "appearance": "Idioma e tema", "adminPanel": "Painel de admin", "signOut": "Terminar sessão", "owner": "Dono do site", "noBio": "Ainda sem descrição.", "addedTab": "Adicionados ({n})", "visitedTab": "Visitados ({n})", "privateV": "Este utilizador mantém os locais visitados privados.", "nothing": "Ainda nada por aqui.", "editProfile": "Editar perfil", "menuBack": "‹ Menu", "pending": "Pendente", "settingsT": "Definições", "changePhoto": "Mudar foto", "addPhoto": "Adicionar foto", "username": "Nome de utilizador (único)", "bioPh": "Fala um pouco sobre ti…", "showV": "Mostrar os locais que visitei no meu perfil público", "save": "Guardar", "nameShort": "O nome de utilizador deve ter pelo menos 3 caracteres.", "reserved": "Esse nome de utilizador está reservado.", "taken": "Esse nome de utilizador já está em uso.", "couldNotSave": "Não foi possível guardar.", "saved": "Guardado ✓", "adminT": "Painel de admin", "onlyYouSee": "Só tu vês isto.", "waitingFor": "A aguardar aprovação ({n})", "nothingPending": "Nada pendente", "allPianos": "Todos os pianos ({n})", "noPianos": "Ainda sem pianos.", "by": "por", "editT": "Editar piano", "approved": "Aprovado", "pendingO": "Pendente", "rmPhoto": "Remover foto", "checkFields": "Verifica o nome e as coordenadas.", "piApproved": "Piano aprovado ✓", "couldNotApprove": "Não foi possível aprovar.", "confDelPiano": "Eliminar este piano e as suas avaliações?", "confDelRev": "Eliminar esta avaliação?", "couldNotDelete": "Não foi possível eliminar.", "latitude": "Latitude", "longitude": "Longitude", "signIn": "Entrar", "createAcc": "Criar conta", "signUp": "Registar", "authMsg": "Entra para adicionar pianos, avaliá-los e guardar os locais que visitaste.", "uniqPh": "Nome de utilizador único", "emailPh": "Email", "passPh": "Palavra-passe (mín. 6 caracteres)", "google": "Continuar com o Google", "noAcc": "Sem conta? Regista-te", "haveAcc": "Já tens conta? Entra", "forgot": "Esqueceste a palavra-passe?", "newPwT": "Nova palavra-passe", "savePw": "Guardar palavra-passe", "enterCreds": "Indica o email e uma palavra-passe com 6 ou mais caracteres.", "wrong": "Algo correu mal.", "created": "Conta criada! Confirma o teu email e depois entra.", "enterEmail": "Indica primeiro o teu email.", "resetSent": "Vê o teu email para o link de recuperação.", "pw6": "Mínimo de 6 caracteres.", "pwUpdated": "Palavra-passe atualizada ✓", "needVisit": "Entra para marcar locais como visitados.", "needReview": "Entra para publicar uma avaliação.", "needAdd": "Entra para adicionar um piano.", "choose": "Escolhe de 1 a 5 estrelas.", "newPiano": "Novo piano", "verifyNote": " · será publicado após verificação", "namePh": "Nome / local (ex.: Gare do Oriente)", "descPh": "Descrição: afinação, horários, acesso…", "savePiano": "Guardar piano", "nameNeeded": "Dá um nome ao piano.", "thanks": "Obrigado! O piano ficará visível para todos depois de verificado pelo dono.", "loadErr": "Não foi possível carregar os dados.", "imgErr": "Não foi possível ler essa imagem.", "locErr": "Não foi possível obter a tua localização. Verifica as permissões.", "notFound": "Local não encontrado.", "searchErr": "Erro na pesquisa.", "unknown": "Desconhecido", "localProf": "Perfil", "language": "Idioma", "langAuto": "Automático", "theme": "Tema", "themeSys": "Sistema", "themeLight": "Claro", "themeDark": "Escuro", "install": "Instalar app", "installBar": "Instala o Pianomaps como app", "you": "Tu", "name": "Nome", "profileNote": "Guardado neste dispositivo", "sendVerif": "Enviar para verificação", "onDevice": "Só neste dispositivo", "onDeviceHint": "Para já só tu vês este piano. Envia-o para verificação para ficar público.", "backup": "Cópia de segurança", "backupP": "Os teus pianos, avaliações e perfil ficam neste navegador. Exporta um ficheiro para guardar uma cópia ou passar para outro dispositivo.", "exportB": "Exportar os meus dados", "importB": "Importar dados", "imported": "Importado ✓", "importErr": "Não foi possível importar esse ficheiro.", "copied": "Sugestão copiada. Envia-a ao dono do site.", "savedDevice": "Guardado neste dispositivo. Toca em “Enviar para verificação” para ficar público."}};
+let langPref=localStorage.getItem("pm_lang")||"auto",theme=localStorage.getItem("pm_theme")||"system";
+const lang=()=>langPref!=="auto"?langPref:((navigator.language||"en").toLowerCase().startsWith("pt")?"pt":"en");
+const t=(k,v)=>{let s=(DICT[lang()]||DICT.en)[k]??DICT.en[k]??k;if(v)for(const x in v)s=s.replace("{"+x+"}",v[x]);return s};
+const mq=window.matchMedia?matchMedia("(prefers-color-scheme: dark)"):{matches:false};
+function applyTheme(){
+  const r=document.documentElement;theme==="system"?r.removeAttribute("data-theme"):r.setAttribute("data-theme",theme);
+  const dark=theme==="dark"||(theme==="system"&&mq.matches);
+  document.body.classList.toggle("dmap",dark&&!(typeof isSat!=="undefined"&&isSat));
+  r.toggleAttribute("data-dark",dark);const tc=document.querySelector('meta[name="theme-color"]');if(tc)tc.content=dark?"#000000":"#ffffff";
+}
+if(mq.addEventListener)mq.addEventListener("change",applyTheme);
+function applyLang(){
+  document.documentElement.lang=lang();
+  document.querySelectorAll("[data-i18n]").forEach(e=>e.textContent=t(e.dataset.i18n));
+  document.querySelectorAll("[data-i18n-ph]").forEach(e=>e.placeholder=t(e.dataset.i18nPh));
+  document.querySelectorAll("[data-i18n-aria]").forEach(e=>e.setAttribute("aria-label",t(e.dataset.i18nAria)));
+  $("iLang").textContent=lang().toUpperCase();
+}
+const setLang=v=>{langPref=v;localStorage.setItem("pm_lang",v);applyLang();setAcct()};
+const setTheme=v=>{theme=v;localStorage.setItem("pm_theme",v);applyTheme()};
+
+const map=L.map("map",{zoomControl:false,maxZoom:22,wheelPxPerZoomLevel:70}).setView([38.72,-9.14],13);
+const qk=(x,y,z)=>{let q="";for(let i=z;i>0;i--){const m=1<<(i-1);q+=(x&m?1:0)+(y&m?2:0)}return q};
+const Bing=L.TileLayer.extend({getTileUrl(c){return `https://ecn.t${(c.x+c.y)%4}.tiles.virtualearth.net/tiles/${this.options.kind}${qk(c.x,c.y,this._getZoomForUrl())}${this.options.ext}?g=1&mkt=en-US`}});
+const bOpt=k=>({kind:k,ext:k==="r"?"":".jpeg",maxNativeZoom:19,maxZoom:22,attribution:"© Microsoft Bing"});
+const street=new Bing("",bOpt("r")), sat=new Bing("",bOpt("h"));
+// fallback: if Bing fails to load, switch to CARTO automatically
+const carto=L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",{subdomains:"abcd",maxNativeZoom:20,maxZoom:22,attribution:"© OpenStreetMap © CARTO"});
+let okTiles=false,errs=0;
+street.on("tileload",()=>okTiles=true);
+street.on("tileerror",()=>{if(!okTiles&&++errs===6&&!isSat){map.removeLayer(street);carto.addTo(map)}});
+street.addTo(map);L.control.zoom({position:"bottomleft"}).addTo(map);
+let isSat=false;
+$("layer").onclick=()=>{if(isSat){map.removeLayer(sat);(errs>=6&&!okTiles?carto:street).addTo(map)}else{map.removeLayer(street);map.removeLayer(carto);sat.addTo(map)}isSat=!isSat;applyTheme()};
+
+// ===== data: shared pianos.json (read-only) + this device (localStorage) =====
+const LS=(k,d)=>{try{return JSON.parse(localStorage.getItem("pm_"+k))??d}catch(e){return d}};
+const SV=(k,v)=>{try{localStorage.setItem("pm_"+k,JSON.stringify(v))}catch(e){alert(t("couldNotSave"))}};
+let shared=[],mine=LS("mine",[]),reviews=LS("reviews",[]),visits=LS("visits",[]),profile=LS("profile",{name:"",bio:"",avatar:""});
+let pianos=[],markers={},seen=new Set(),sel=null,rate=0,pending=null,photo=null,vk="",lastKey="";
+const rebuild=()=>{const ids=new Set(shared.map(p=>p.id));pianos=shared.map(p=>({...p,src:"shared"})).concat(mine.filter(p=>!ids.has(p.id)).map(p=>({...p,src:"mine"})))};
+const uid=()=>"p"+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const allRevs=id=>{const p=pianos.find(x=>x.id===id);return ((p&&p.reviews)||[]).map(r=>({name:r.name,rating:+r.rating||0,text:r.text||"",date:r.date||"",own:false}))
+  .concat(reviews.filter(r=>r.piano_id===id).map(r=>({name:profile.name||t("you"),rating:r.rating,text:r.text,date:r.created_at,own:true})))};
+const avg=id=>{const r=allRevs(id);return r.length?r.reduce((a,b)=>a+b.rating,0)/r.length:0};
+const stars=n=>"★".repeat(Math.round(n))+"☆".repeat(5-Math.round(n));
+const rtxt=id=>allRevs(id).length?`<span class="star">${stars(avg(id))}</span> ${avg(id).toFixed(1)} · ${allRevs(id).length}`:t("noRev");
+const hasVisited=id=>visits.includes(id);
+const fdate=d=>d?new Date(d).toLocaleDateString(lang()==="pt"?"pt-PT":"en-GB"):"";
+const av=(s=36)=>`<span class="av" style="width:${s}px;height:${s}px;font-size:${Math.round(s*.45)}px">${profile.avatar?`<img src="${esc(profile.avatar)}" alt="">`:esc((profile.name||"?")[0].toUpperCase())}</span>`;
+function toast(m){const e=$("toast");e.style.animation="none";void e.offsetWidth;e.style.animation="";e.textContent=m;e.style.display="block";clearTimeout(toast.t);toast.t=setTimeout(()=>e.style.display="none",4500)}
+function resize(file,max){return new Promise((res,rej)=>{const img=new Image(),u=URL.createObjectURL(file);
+  img.onload=()=>{const s=Math.min(1,max/Math.max(img.width,img.height)),c=document.createElement("canvas");c.width=Math.round(img.width*s);c.height=Math.round(img.height*s);
+    c.getContext("2d").drawImage(img,0,0,c.width,c.height);URL.revokeObjectURL(u);c.toBlob(b=>b?res(b):rej(),"image/jpeg",.78)};img.onerror=rej;img.src=u})}
+const toData=b=>new Promise(r=>{const f=new FileReader();f.onload=()=>r(f.result);f.readAsDataURL(b)});
+async function loadShared(){
+  try{const r=await fetch("pianos.json",{cache:"no-store"});if(!r.ok)throw 0;
+    const arr=JSON.parse((await r.text()).replace(/,\s*([\]}])/g,"$1"));
+    shared=(Array.isArray(arr)?arr:[]).filter(p=>p&&p.id&&typeof p.lat==="number"&&typeof p.lng==="number")}catch(e){shared=[]}
+  rebuild();setAcct();draw();
+}
+
+// ===== map markers =====
+function draw(){
+  Object.values(markers).forEach(m=>m.remove());markers={};
+  pianos.forEach(p=>{
+    const cls=`pm${p.src==="mine"?" pend":""}${seen.has(p.id)?"":" new"}${p.id===sel?" on":""}`;seen.add(p.id);
+    const m=L.marker([p.lat,p.lng],{icon:L.divIcon({className:"",html:`<div class="${cls}"></div>`,iconSize:[26,26],iconAnchor:[13,31]})}).addTo(map);
+    m.on("click",()=>openPiano(p.id));markers[p.id]=m});
+  if(sel&&$("sheet").dataset.mode==="piano")showPiano();
+}
+function setAcct(){
+  const b=$("acct");
+  b.innerHTML=profile.avatar?`<img src="${esc(profile.avatar)}" alt="" style="width:100%;height:100%;border-radius:50%;object-fit:cover">`:(profile.name?esc(profile.name[0].toUpperCase()):ICON_USER);
+}
+
+// ===== sheet =====
+const mode=(m,x="")=>{$("sheet").dataset.mode=m;vk=m+":"+x};
+const sheet=h=>{const s=$("sheet"),fresh=!s.classList.contains("open")||vk!==lastKey;lastKey=vk;
+  s.innerHTML='<div class="grab"></div>'+h;s.classList.add("open");s.classList.toggle("anim",fresh);if(fresh)s.scrollTop=0};
+const closeSheet=()=>{$("sheet").classList.remove("open");sel=null;rate=0;photo=null;lastKey="";mode("");draw()};
+const pcard=p=>`<button class="pc" data-act="go" data-id="${p.id}">${p.photo_url?`<img src="${esc(p.photo_url)}" alt="">`:"<span>♪</span>"}<div><b>${esc(p.name)}</b>${p.src==="mine"?` <span class="badge w">${t("onDevice")}</span>`:""}<div class="mut">${rtxt(p.id)}</div></div></button>`;
+const photoInput=k=>`<label class="b">${k==="avatar"?t("changePhoto"):t("addPhoto")}<input type="file" accept="image/*" data-photo="${k}" hidden></label>`;
+
+function openPiano(id){const p=pianos.find(x=>x.id===id);if(!p)return;sel=id;rate=0;map.flyTo([p.lat,p.lng],Math.max(map.getZoom(),19));draw();showPiano()}
+function showPiano(){
+  const p=pianos.find(x=>x.id===sel);if(!p)return;mode("piano",p.id);
+  const keep=$("rText")?.value||"",mineRev=reviews.find(x=>x.piano_id===p.id);if(!rate&&mineRev)rate=mineRev.rating;
+  const isMine=p.src==="mine";
+  sheet(`${p.photo_url?`<img class="pimg" src="${esc(p.photo_url)}" alt="">`:""}
+  <h2>${esc(p.name)}</h2>
+  ${isMine?`<div class="badge w">${t("onDevice")}</div>`:""}
+  <div class="mut" style="margin-top:4px">${rtxt(p.id)}</div>
+  <p>${esc(p.description)||`<span class="mut">${t("noDesc")}</span>`}</p>
+  ${p.added_by?`<div class="mut">${t("addedBy")} <b>${esc(p.added_by)}</b></div>`:""}
+  <div class="acts"><a class="lnk" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination=${p.lat},${p.lng}">${t("dir")}</a>
+    <button class="b ${hasVisited(p.id)?"fill":""}" data-act="visit">${hasVisited(p.id)?t("visited"):t("markV")}</button>
+    <button class="b" data-act="close">${t("close")}</button></div>
+  ${isMine?`<div class="acts"><button class="b fill sm" data-act="verify">${t("sendVerif")}</button><button class="b sm" data-act="delPiano">${t("delMine")}</button></div><div class="mut" style="margin-top:6px">${t("onDeviceHint")}</div>`:""}
+  <div style="margin-top:14px"><b>${mineRev?t("yourRev"):t("ratePiano")}</b>
+    <div class="stars">${[1,2,3,4,5].map(n=>`<button data-act="rate" data-r="${n}" class="${n<=rate?"on":""}" aria-label="${t("stars",{n})}">★</button>`).join("")}</div>
+    <textarea id="rText" rows="2" placeholder="${t("commentPh")}" maxlength="400">${esc(keep||mineRev?.text||"")}</textarea>
+    <div class="acts"><button class="b fill" data-act="post">${mineRev?t("update"):t("post")}</button></div></div>
+  <div style="margin-top:8px">${allRevs(p.id).sort((a,b)=>String(b.date).localeCompare(String(a.date))).map(r=>`<div class="rev"><div class="uh" style="gap:8px"><b>${esc(r.name||t("unknown"))}</b><span class="star">${stars(r.rating)}</span></div>
+    <div>${esc(r.text)}</div><div class="mut">${fdate(r.date)}${r.own?` · <a href="#" data-act="delRev" style="color:inherit">${t("delLink")}</a>`:""}</div></div>`).join("")}</div>`);
+}
+
+// ===== menu / profile / settings / backup / preferences =====
+function showMenu(){
+  mode("menu");
+  sheet(`<div class="uh">${av(56)}<div><h2>${esc(profile.name||t("you"))}</h2><div class="mut">${t("profileNote")}</div></div></div>
+  <div class="menu">
+    <button data-act="profile">${t("myProfile")}</button>
+    <button data-act="profile" data-tab="v">${t("myVisits")}</button>
+    <button data-act="settings">${t("settings")}</button>
+    <button data-act="prefs">${t("appearance")}</button>
+    <button data-act="backup">${t("backup")}</button>
+  </div><div class="acts"><button class="b" data-act="close">${t("close")}</button></div>`);
+}
+function showPrefs(){
+  mode("prefs");
+  const seg=(act,cur,opts)=>`<div class="tabs">${opts.map(([v,l])=>`<button class="${cur===v?"on":""}" data-act="${act}" data-v="${v}">${l}</button>`).join("")}</div>`;
+  sheet(`<h2>${t("prefsT")}</h2><h3>${t("language")}</h3>${seg("lang",langPref,[["auto",t("langAuto")],["en","English"],["pt","Português"]])}
+  <h3>${t("theme")}</h3>${seg("theme",theme,[["system",t("themeSys")],["light",t("themeLight")],["dark",t("themeDark")]])}
+  ${deferredInstall?`<h3>${t("install")}</h3><div class="acts"><button class="b fill" data-act="install">${t("install")}</button></div>`:""}
+  <div class="acts"><button class="b" data-act="close">${t("close")}</button></div>`);
+}
+function showProfile(tab="a"){
+  mode("profile");const added=pianos.filter(p=>p.src==="mine"),vis=visits.map(i=>pianos.find(x=>x.id===i)).filter(Boolean),list=tab==="a"?added:vis;
+  sheet(`<div class="uh">${av(64)}<div><h2>${esc(profile.name||t("you"))}</h2></div></div>
+  <p>${esc(profile.bio)||`<span class="mut">${t("noBio")}</span>`}</p>
+  <div class="tabs"><button class="${tab==="a"?"on":""}" data-act="profile" data-tab="a">${t("addedTab",{n:added.length})}</button><button class="${tab==="v"?"on":""}" data-act="profile" data-tab="v">${t("visitedTab",{n:vis.length})}</button></div>
+  ${list.length?list.map(pcard).join(""):`<p class="mut">${t("nothing")}</p>`}
+  <div class="acts"><button class="b" data-act="settings">${t("editProfile")}</button><button class="b" data-act="menu">${t("menuBack")}</button></div>`);
+}
+function showSettings(){
+  mode("settings");photo=null;
+  sheet(`<h2>${t("settingsT")}</h2>
+  <div class="uh" style="margin:10px 0"><span id="avp">${av(64)}</span>${photoInput("avatar")}</div>
+  <input id="sName" value="${esc(profile.name)}" maxlength="30" placeholder="${t("name")}">
+  <textarea id="sBio" rows="3" maxlength="200" placeholder="${t("bioPh")}">${esc(profile.bio)}</textarea>
+  <div class="acts"><button class="b fill" data-act="saveSettings">${t("save")}</button><button class="b" data-act="menu">${t("cancel")}</button></div>`);
+}
+function showBackup(){
+  mode("backup");
+  sheet(`<h2>${t("backup")}</h2><p class="mut">${t("backupP")}</p>
+  <div class="acts"><button class="b fill" data-act="exportData">${t("exportB")}</button><label class="b">${t("importB")}<input type="file" accept="application/json,.json" data-import hidden></label></div>
+  <div class="acts"><button class="b" data-act="menu">${t("menuBack")}</button></div>`);
+}
+
+// ===== actions =====
+const acts={
+  close:()=>closeSheet(), menu:()=>showMenu(), go:el=>openPiano(el.dataset.id), prefs:()=>showPrefs(), install:()=>install(),
+  lang:el=>{setLang(el.dataset.v);showPrefs()}, theme:el=>{setTheme(el.dataset.v);showPrefs()},
+  profile:el=>showProfile(el.dataset.tab||"a"), settings:()=>showSettings(), backup:()=>showBackup(),
+  rate:el=>{rate=+el.dataset.r;showPiano()},
+  visit(){visits=hasVisited(sel)?visits.filter(i=>i!==sel):[...visits,sel];SV("visits",visits);showPiano()},
+  post(){
+    if(!rate){alert(t("choose"));return}
+    const text=$("rText").value.trim(),i=reviews.findIndex(x=>x.piano_id===sel);
+    if(i>=0)reviews[i]={...reviews[i],rating:rate,text};else reviews.push({piano_id:sel,rating:rate,text,created_at:new Date().toISOString()});
+    SV("reviews",reviews);rate=0;$("rText").value="";showPiano();draw();
+  },
+  delRev(){if(!confirm(t("confDelRev")))return;reviews=reviews.filter(x=>x.piano_id!==sel);SV("reviews",reviews);rate=0;showPiano()},
+  async savePiano(el){
+    const name=$("fName").value.trim();if(!name){alert(t("nameNeeded"));return}
+    const p={id:uid(),name,description:$("fDesc").value.trim(),lat:pending.lat,lng:pending.lng,added_by:profile.name||"",created_at:new Date().toISOString()};
+    if(photo)p.photo_url=await toData(photo);
+    mine.push(p);SV("mine",mine);rebuild();pending=null;photo=null;openPiano(p.id);toast(t("savedDevice"));
+  },
+  delPiano(){
+    if(!confirm(t("confDelPiano")))return;
+    mine=mine.filter(x=>x.id!==sel);reviews=reviews.filter(x=>x.piano_id!==sel);visits=visits.filter(x=>x!==sel);
+    SV("mine",mine);SV("reviews",reviews);SV("visits",visits);rebuild();closeSheet();
+  },
+  verify(){
+    const p=pianos.find(x=>x.id===sel);if(!p)return;
+    const m=location.hostname.match(/^(.+)\.github\.io$/),json=JSON.stringify({id:p.id,name:p.name,description:p.description||"",lat:+p.lat.toFixed(6),lng:+p.lng.toFixed(6),added_by:profile.name||""});
+    const body=`**New piano suggestion**\n\n- Name: ${p.name}\n- Description: ${p.description||"-"}\n- Location: https://www.google.com/maps?q=${p.lat},${p.lng}\n- Suggested by: ${profile.name||"anonymous"}\n\n(If you have a photo of the piano, drag it into this issue.)\n\n---\nFor the owner: add this line inside pianos.json to publish it:\n\`\`\`json\n${json},\n\`\`\``;
+    if(m){const repo=location.pathname.split("/")[1]||location.hostname;window.open(`https://github.com/${m[1]}/${repo}/issues/new?title=${encodeURIComponent("Piano: "+p.name)}&body=${encodeURIComponent(body)}`,"_blank")}
+    else{if(navigator.clipboard)navigator.clipboard.writeText(body).catch(()=>{});toast(t("copied"))}
+  },
+  async saveSettings(){
+    profile.name=$("sName").value.trim();profile.bio=$("sBio").value.trim();
+    if(photo)profile.avatar=await toData(photo);
+    SV("profile",profile);photo=null;setAcct();toast(t("saved"));showMenu();
+  },
+  exportData(){
+    const blob=new Blob([JSON.stringify({app:"pianomaps",version:1,mine,reviews,visits,profile})],{type:"application/json"}),a=document.createElement("a");
+    a.href=URL.createObjectURL(blob);a.download="pianomaps-backup.json";document.body.appendChild(a);a.click();a.remove();
+  }
+};
+$("sheet").addEventListener("click",e=>{const el=e.target.closest("[data-act]");if(!el)return;if(el.tagName==="A")e.preventDefault();const f=acts[el.dataset.act];if(f)f(el)});
+$("sheet").addEventListener("change",async e=>{
+  const x=e.target;if(!x.matches||!x.files||!x.files[0])return;
+  if(x.matches("[data-import]")){
+    try{const d=JSON.parse(await x.files[0].text());if(d.app!=="pianomaps")throw 0;
+      const ids=new Set(mine.map(p=>p.id));(d.mine||[]).forEach(p=>{if(p&&p.id&&!ids.has(p.id))mine.push(p)});
+      (d.reviews||[]).forEach(r=>{if(!reviews.some(y=>y.piano_id===r.piano_id))reviews.push(r)});
+      visits=[...new Set([...visits,...(d.visits||[])])];if(d.profile&&(d.profile.name||d.profile.avatar))profile={...profile,...d.profile};
+      SV("mine",mine);SV("reviews",reviews);SV("visits",visits);SV("profile",profile);rebuild();setAcct();draw();toast(t("imported"))}
+    catch(err){alert(t("importErr"))}
+    return}
+  if(!x.matches("[data-photo]"))return;
+  const isAv=x.dataset.photo==="avatar";
+  try{photo=await resize(x.files[0],isAv?240:960);const url=URL.createObjectURL(photo);
+    if(isAv)$("avp").innerHTML=`<span class="av" style="width:64px;height:64px"><img src="${url}" alt=""></span>`;
+    else{const pv=$("pv");pv.src=url;pv.hidden=false}}
+  catch(err){alert(t("imgErr"))}
+});
+$("acct").onclick=showMenu;
+$("prefs").onclick=showPrefs;
+$("iLang").onclick=()=>setLang(lang()==="en"?"pt":"en");
+$("iTheme").onclick=()=>{const o=["system","light","dark"];setTheme(o[(o.indexOf(theme)+1)%3])};
+
+// ===== add a piano: move the map, confirm =====
+function placing(on){$("cross").style.display=on?"block":"none";$("pbar").style.display=on?"block":"none";document.querySelector(".fabs").style.display=on?"none":"flex";if(on){closeSheet();if(map.getZoom()<18)map.setZoom(19)}}
+$("add").onclick=()=>placing(true);
+$("pNo").onclick=()=>placing(false);
+$("pOk").onclick=()=>{const c=map.getCenter();pending={lat:c.lat,lng:c.lng};photo=null;placing(false);mode("form");
+  sheet(`<h2>${t("newPiano")}</h2><div class="mut">${c.lat.toFixed(5)}, ${c.lng.toFixed(5)}</div>
+  <input id="fName" placeholder="${t("namePh")}" maxlength="80">
+  <textarea id="fDesc" rows="3" placeholder="${t("descPh")}" maxlength="300"></textarea>
+  <img class="pimg" id="pv" style="margin-top:10px" hidden alt="">
+  <div class="acts">${photoInput("piano")}</div>
+  <div class="acts"><button class="b fill" data-act="savePiano">${t("savePiano")}</button><button class="b" data-act="close">${t("cancel")}</button></div>`)};
+
+// ===== location + search =====
+$("loc").onclick=()=>map.locate({setView:true,maxZoom:20});
+let meDot;map.on("locationfound",e=>{meDot&&meDot.remove();meDot=L.circleMarker(e.latlng,{radius:8,color:"#fff",weight:3,fillColor:"#2a7fff",fillOpacity:1}).addTo(map)});
+map.on("locationerror",()=>alert(t("locErr")));
+$("q").addEventListener("keydown",async e=>{
+  if(e.key!=="Enter")return;e.preventDefault();$("q").blur();
+  const v=$("q").value.trim();if(!v)return;
+  try{const r=await (await fetch("https://nominatim.openstreetmap.org/search?format=json&limit=1&accept-language="+lang()+"&q="+encodeURIComponent(v))).json();
+    if(r[0])map.flyTo([+r[0].lat,+r[0].lon],17);else alert(t("notFound"))}catch(err){alert(t("searchErr"))}
+});
+
+// ===== start screen =====
+(function(){
+  const kb=$("kb"),N=14,pat=[1,1,0,1,1,1,0];
+  for(let i=0;i<N;i++){const k=document.createElement("div");k.className="wk";k.style.animationDelay=((i*.23)%3.2)+"s";kb.appendChild(k);
+    if(i<N-1&&pat[i%7]){const b=document.createElement("div");b.className="bk";b.style.left=((i+1)*100/N)+"%";kb.appendChild(b)}}
+})();
+const closeIntro=()=>{$("intro").classList.add("hide");maybeInstall()};
+$("iGo").onclick=closeIntro;
+$("iAdd").onclick=()=>{closeIntro();$("add").click()};
+$("iLoc").onclick=()=>{closeIntro();map.locate({setView:true,maxZoom:18})};
+$("logo").onclick=()=>{closeSheet();$("intro").classList.remove("hide")};
+
+// ===== install as an app (PWA) =====
+let deferredInstall=null;
+function maybeInstall(){
+  $("iInstall").hidden=!deferredInstall;
+  $("ib").hidden=!(deferredInstall&&$("intro").classList.contains("hide")&&!localStorage.getItem("pm_ib"));
+}
+async function install(){if(!deferredInstall)return;deferredInstall.prompt();try{await deferredInstall.userChoice}catch(e){}deferredInstall=null;maybeInstall()}
+addEventListener("beforeinstallprompt",e=>{e.preventDefault();deferredInstall=e;maybeInstall()});
+addEventListener("appinstalled",()=>{deferredInstall=null;maybeInstall()});
+$("ibGo").onclick=install;$("iInstall").onclick=install;
+$("ibNo").onclick=()=>{localStorage.setItem("pm_ib","1");$("ib").hidden=true};
+if("serviceWorker" in navigator&&/^https?:/.test(location.protocol))navigator.serviceWorker.register("sw.js").catch(()=>{});
+
+// ===== start =====
+applyTheme();applyLang();rebuild();setAcct();draw();loadShared();
+
+</script>
+</body>
+</html>
