@@ -1,6 +1,6 @@
 // Pianomaps service worker: makes the site installable and keeps the app shell available offline.
 const V="pianomaps-v1";
-const SHELL=["./","index.html","pianos.json","manifest.webmanifest","assets/logo-light.png","assets/logo-dark.png","assets/mark-light.png","assets/mark-dark.png","icons/icon-192.png","icons/icon-512.png"];
+const SHELL=["./","index.html","config.js","manifest.webmanifest","assets/logo-light.png","assets/logo-dark.png","assets/mark-light.png","assets/mark-dark.png","icons/icon-192.png","icons/icon-512.png"];
 self.addEventListener("install",e=>{e.waitUntil(caches.open(V).then(c=>Promise.all(SHELL.map(u=>c.add(u).catch(()=>{})))).then(()=>self.skipWaiting()))});
 self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==V).map(k=>caches.delete(k)))).then(()=>self.clients.claim()))});
 // own files: network first (always fresh), cache as fallback. Maps, Supabase and photos are never cached here.
