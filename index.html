@@ -98,6 +98,28 @@ label.b{cursor:pointer}
 .bar{height:6px;border-radius:3px;background:var(--line);margin:8px 0 12px;overflow:hidden}.bar i{display:block;height:100%;background:#1faa59;transition:width .5s}
 #legend{position:fixed;z-index:450;left:12px;top:calc(68px + env(safe-area-inset-top,0px));display:flex;gap:14px;background:var(--bg);border:1px solid var(--line);border-radius:999px;padding:5px 14px;font-size:12px;color:var(--mut);box-shadow:var(--sh);align-items:center}
 #legend .dot{width:9px;height:9px;border-radius:50%;display:inline-block;margin-right:6px}
+#radio{position:fixed;z-index:520;left:12px;bottom:calc(20px + env(safe-area-inset-bottom,0px))}
+#radio.playing::after{content:"";position:absolute;inset:-4px;border-radius:50%;border:2px solid var(--acc);opacity:0;animation:ping 2s ease-out infinite;pointer-events:none}
+@keyframes ping{0%{transform:scale(.9);opacity:.7}100%{transform:scale(1.4);opacity:0}}
+#rp{position:fixed;z-index:520;left:12px;bottom:calc(78px + env(safe-area-inset-bottom,0px));width:min(310px,calc(100vw - 24px));background:var(--bg);border:1px solid var(--line);border-radius:20px;padding:14px 16px;box-shadow:0 8px 30px rgba(0,0,0,.18);animation:fadeUp .25s both}
+#intro:not(.hide)~#radio,#intro:not(.hide)~#rp{z-index:1050}
+.rt b{display:block;font-size:15px;line-height:1.3}.rc{display:flex;gap:10px;align-items:center;margin:12px 0}
+.rb{width:42px;height:42px;border-radius:50%;border:1px solid var(--line);background:var(--bg);color:var(--fg);display:grid;place-items:center;padding:0;flex:none}
+.rb svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+#rPlay{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+#rVol{flex:1;min-width:0;margin:0;padding:0;border:0;accent-color:var(--fg);height:28px;background:transparent}
+.rf{display:flex;justify-content:space-between;align-items:center}
+@media(max-width:699px){body.sheet-open #radio,body.sheet-open #rp{display:none}}
+#ib{left:68px!important;max-width:calc(100vw - 150px)!important}
+.leaflet-top.leaflet-right{margin-top:66px}
+#modal{position:fixed;inset:0;z-index:1200;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;padding:20px;-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px)}
+#modal.open{display:flex;animation:mfade .2s both}
+.mbox{position:relative;width:min(400px,100%);max-height:90dvh;overflow:auto;background:var(--bg);border:1px solid var(--line);border-radius:24px;padding:28px 22px 20px;box-shadow:0 20px 60px rgba(0,0,0,.35);animation:mpop .3s cubic-bezier(.2,.9,.3,1.15) both}
+.or{display:flex;align-items:center;gap:10px;color:var(--mut);font-size:12px;margin:16px 0 2px}.or::before,.or::after{content:"";flex:1;height:1px;background:var(--line)}
+.oauth{margin-top:8px}.oauth .b{flex:1;text-align:center}
+.mbox .x{position:absolute;top:10px;right:10px;width:34px;height:34px;border-radius:50%;border:0;background:transparent;font-size:16px;color:var(--mut);padding:0}
+@keyframes mfade{from{opacity:0}}
+@keyframes mpop{from{opacity:0;transform:translateY(16px) scale(.96)}}
 /* leaflet tweaks */
 .leaflet-bar{border:1px solid var(--line)!important;box-shadow:var(--sh)!important;border-radius:14px!important;overflow:hidden}
 .leaflet-bar a{background:var(--bg)!important;color:var(--fg)!important;border-bottom:1px solid var(--line)!important}
@@ -159,6 +181,13 @@ img.on-d{display:none}html[data-dark] img.on-l{display:none}html[data-dark] img.
 <div id="pbar"><b data-i18n="pbT">Move the map to the piano</b><div class="mut" data-i18n="pbH">Zoom in close to see the building.</div>
   <div class="acts"><button class="b fill" id="pOk" data-i18n="confirm">Confirm location</button><button class="b" id="pNo" data-i18n="cancel">Cancel</button></div></div>
 <div class="sheet" id="sheet"></div>
+<div id="modal"></div>
+<button class="fab" id="radio" aria-label="Music" data-i18n-aria="radioT"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="8" width="18" height="12" rx="2.5"/><path d="M7 8 17 3"/><circle cx="9" cy="14" r="2.6"/><path d="M15 12h3M15 16h3"/></svg></button>
+<div id="rp" hidden>
+  <div class="rt"><b id="rTitle"></b><div class="mut" id="rSub"></div></div>
+  <div class="rc"><button class="rb" id="rPlay" aria-label="Play"></button><button class="rb" id="rNext" aria-label="Next track" data-i18n-aria="next"><svg viewBox="0 0 24 24"><path d="M6 5v14l9-7-9-7Z"/><path d="M18 5v14"/></svg></button><input type="range" id="rVol" min="0" max="100" aria-label="Volume" data-i18n-aria="volume"></div>
+  <div class="rf"><span class="mut" id="rState"></span><button class="b sm" id="rCred" data-i18n="credits">Music credits</button></div>
+</div>
 <div id="setup"><div><h2 data-i18n="setupT">Almost ready</h2><p data-i18n="setupP"></p></div></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3/dist/umd/supabase.js"></script>
@@ -172,13 +201,13 @@ img.on-d{display:none}html[data-dark] img.on-l{display:none}html[data-dark] img.
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const ICON_USER='<svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>';
-const NEED=10;   // "yes" answers needed to turn a piano green
+const NEED=10;   // "yes" answers (from 10 different accounts) needed to turn a piano green
 const CFG=window.PIANOMAPS_CONFIG||{},SUPABASE_URL=CFG.SUPABASE_URL||"",SUPABASE_KEY=CFG.SUPABASE_KEY||"";
 const SB=!!(SUPABASE_URL&&SUPABASE_KEY&&typeof supabase!=="undefined");
-const sb=SB?supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}}):null;
+const sb=SB?supabase.createClient(SUPABASE_URL,SUPABASE_KEY):null;
 
 // ===== language + theme =====
-const DICT={"en": {"tag": "Find, play and rate public pianos around the world.", "explore": "Explore the map", "addA": "+ Add a piano", "near": "Pianos near me", "search": "Search a city or street…", "account": "Account", "layer": "Map / satellite", "loc": "My location", "prefsT": "Language & theme", "add": "+ Add piano", "pbT": "Move the map to the piano", "pbH": "Zoom in close to see the building.", "confirm": "Confirm location", "cancel": "Cancel", "close": "Close", "setupT": "Almost ready", "setupP": "Open config.js, paste your Supabase URL and key, and upload it again (see README.md).", "noRev": "No reviews yet", "noDesc": "No description.", "addedBy": "Added by", "dir": "Directions", "markV": "Mark as visited", "visited": "✓ Visited", "waiting": "Waiting for verification", "onlyYou": " · only you and the owner can see it", "admin": "Admin", "approve": "Approve", "edit": "Edit", "del": "Delete", "delMine": "Delete my piano", "yourRev": "Your review", "ratePiano": "Rate this piano", "stars": "{n} stars", "commentPh": "Comment: tuning, hours, atmosphere…", "update": "Update", "post": "Post", "delLink": "delete", "myProfile": "My profile", "myVisits": "Places I visited", "settings": "Settings", "appearance": "Language & theme", "adminPanel": "Admin panel", "signOut": "Sign out", "owner": "Site owner", "noBio": "No description yet.", "addedTab": "Added ({n})", "visitedTab": "Visited ({n})", "privateV": "This user keeps their visited places private.", "nothing": "Nothing here yet.", "editProfile": "Edit profile", "menuBack": "‹ Menu", "pending": "Pending", "settingsT": "Settings", "changePhoto": "Change photo", "addPhoto": "Add photo", "username": "Username (unique)", "bioPh": "Tell people about yourself…", "showV": "Show the places I visited on my public profile", "save": "Save", "nameShort": "Username must have at least 3 characters.", "reserved": "That username is reserved.", "taken": "That username is already taken.", "couldNotSave": "Could not save.", "saved": "Saved ✓", "adminT": "Admin panel", "onlyYouSee": "Only you can see this.", "waitingFor": "Waiting for approval ({n})", "nothingPending": "Nothing pending", "allPianos": "All pianos ({n})", "noPianos": "No pianos yet.", "by": "by", "editT": "Edit piano", "approved": "Approved", "pendingO": "Pending", "rmPhoto": "Remove photo", "checkFields": "Check the name and coordinates.", "piApproved": "Piano approved ✓", "couldNotApprove": "Could not approve.", "confDelPiano": "Delete this piano and its reviews?", "confDelRev": "Delete this review?", "couldNotDelete": "Could not delete.", "latitude": "Latitude", "longitude": "Longitude", "signIn": "Sign in", "createAcc": "Create account", "signUp": "Sign up", "authMsg": "Sign in to add pianos, review them and keep track of places you visited.", "uniqPh": "Unique username", "emailPh": "Email", "passPh": "Password (min. 6 characters)", "google": "Continue with Google", "noAcc": "No account? Sign up", "haveAcc": "Have an account? Sign in", "forgot": "Forgot password?", "newPwT": "New password", "savePw": "Save password", "enterCreds": "Enter your email and a password with 6+ characters.", "wrong": "Something went wrong.", "created": "Account created! Check your email to confirm it, then sign in.", "enterEmail": "Enter your email first.", "resetSent": "Check your email for a reset link.", "pw6": "6+ characters, please.", "pwUpdated": "Password updated ✓", "needVisit": "Sign in to mark places as visited.", "needReview": "Sign in to post a review.", "needAdd": "Sign in to add a piano.", "choose": "Choose 1 to 5 stars.", "newPiano": "New piano", "verifyNote": " · will be published after verification", "namePh": "Name / location (e.g. Central Station)", "descPh": "Description: tuning, opening hours, access…", "savePiano": "Save piano", "nameNeeded": "Please name the piano.", "thanks": "Thanks! Your piano will appear for everyone once the owner verifies it.", "loadErr": "Could not load data.", "imgErr": "Could not read that image.", "locErr": "Could not get your location. Check permissions.", "notFound": "Place not found.", "searchErr": "Search error.", "unknown": "Unknown", "localProf": "Profile", "language": "Language", "langAuto": "Auto", "theme": "Theme", "themeSys": "System", "themeLight": "Light", "themeDark": "Dark", "install": "Install app", "installBar": "Install Pianomaps as an app", "notConfirmed": "Not confirmed", "confirmed": "Confirmed", "isTrueQ": "Is this true?", "existsQ": "Does this piano really exist here?", "yes": "Yes", "no": "No", "confirmCount": "{n} of {need} confirmations", "thanksVote": "Thanks for your answer!", "yourPiano": "You added this piano. Other people need to confirm it.", "confirmedBy": "confirmed by {n} people", "nowConfirmed": "This piano is now confirmed!", "ownVote": "You can’t confirm your own piano.", "addedToast": "Your piano is now on the map for everyone. It turns green after 10 people confirm it.", "redNote": "Visible to everyone, red until confirmed", "legGreen": "Confirmed", "legRed": "Not confirmed", "anonymous": "Anonymous", "you": "You", "name": "Name", "profileNote": "Saved on this device"}, "pt": {"tag": "Encontra, toca e avalia pianos públicos em todo o mundo.", "explore": "Explorar o mapa", "addA": "+ Adicionar um piano", "near": "Pianos perto de mim", "search": "Procurar cidade ou rua…", "account": "Conta", "layer": "Mapa / satélite", "loc": "A minha localização", "prefsT": "Idioma e tema", "add": "+ Adicionar piano", "pbT": "Move o mapa até ao piano", "pbH": "Aproxima bem para ver o edifício.", "confirm": "Confirmar local", "cancel": "Cancelar", "close": "Fechar", "setupT": "Quase pronto", "setupP": "Abre o config.js, cola o URL e a chave do Supabase e volta a carregá-lo (vê o README.md).", "noRev": "Ainda sem avaliações", "noDesc": "Sem descrição.", "addedBy": "Adicionado por", "dir": "Como chegar", "markV": "Marcar como visitado", "visited": "✓ Visitado", "waiting": "A aguardar verificação", "onlyYou": " · só tu e o dono podem ver", "admin": "Admin", "approve": "Aprovar", "edit": "Editar", "del": "Eliminar", "delMine": "Eliminar o meu piano", "yourRev": "A tua avaliação", "ratePiano": "Avaliar este piano", "stars": "{n} estrelas", "commentPh": "Comentário: afinação, horário, ambiente…", "update": "Atualizar", "post": "Publicar", "delLink": "eliminar", "myProfile": "O meu perfil", "myVisits": "Locais que visitei", "settings": "Definições", "appearance": "Idioma e tema", "adminPanel": "Painel de admin", "signOut": "Terminar sessão", "owner": "Dono do site", "noBio": "Ainda sem descrição.", "addedTab": "Adicionados ({n})", "visitedTab": "Visitados ({n})", "privateV": "Este utilizador mantém os locais visitados privados.", "nothing": "Ainda nada por aqui.", "editProfile": "Editar perfil", "menuBack": "‹ Menu", "pending": "Pendente", "settingsT": "Definições", "changePhoto": "Mudar foto", "addPhoto": "Adicionar foto", "username": "Nome de utilizador (único)", "bioPh": "Fala um pouco sobre ti…", "showV": "Mostrar os locais que visitei no meu perfil público", "save": "Guardar", "nameShort": "O nome de utilizador deve ter pelo menos 3 caracteres.", "reserved": "Esse nome de utilizador está reservado.", "taken": "Esse nome de utilizador já está em uso.", "couldNotSave": "Não foi possível guardar.", "saved": "Guardado ✓", "adminT": "Painel de admin", "onlyYouSee": "Só tu vês isto.", "waitingFor": "A aguardar aprovação ({n})", "nothingPending": "Nada pendente", "allPianos": "Todos os pianos ({n})", "noPianos": "Ainda sem pianos.", "by": "por", "editT": "Editar piano", "approved": "Aprovado", "pendingO": "Pendente", "rmPhoto": "Remover foto", "checkFields": "Verifica o nome e as coordenadas.", "piApproved": "Piano aprovado ✓", "couldNotApprove": "Não foi possível aprovar.", "confDelPiano": "Eliminar este piano e as suas avaliações?", "confDelRev": "Eliminar esta avaliação?", "couldNotDelete": "Não foi possível eliminar.", "latitude": "Latitude", "longitude": "Longitude", "signIn": "Entrar", "createAcc": "Criar conta", "signUp": "Registar", "authMsg": "Entra para adicionar pianos, avaliá-los e guardar os locais que visitaste.", "uniqPh": "Nome de utilizador único", "emailPh": "Email", "passPh": "Palavra-passe (mín. 6 caracteres)", "google": "Continuar com o Google", "noAcc": "Sem conta? Regista-te", "haveAcc": "Já tens conta? Entra", "forgot": "Esqueceste a palavra-passe?", "newPwT": "Nova palavra-passe", "savePw": "Guardar palavra-passe", "enterCreds": "Indica o email e uma palavra-passe com 6 ou mais caracteres.", "wrong": "Algo correu mal.", "created": "Conta criada! Confirma o teu email e depois entra.", "enterEmail": "Indica primeiro o teu email.", "resetSent": "Vê o teu email para o link de recuperação.", "pw6": "Mínimo de 6 caracteres.", "pwUpdated": "Palavra-passe atualizada ✓", "needVisit": "Entra para marcar locais como visitados.", "needReview": "Entra para publicar uma avaliação.", "needAdd": "Entra para adicionar um piano.", "choose": "Escolhe de 1 a 5 estrelas.", "newPiano": "Novo piano", "verifyNote": " · será publicado após verificação", "namePh": "Nome / local (ex.: Gare do Oriente)", "descPh": "Descrição: afinação, horários, acesso…", "savePiano": "Guardar piano", "nameNeeded": "Dá um nome ao piano.", "thanks": "Obrigado! O piano ficará visível para todos depois de verificado pelo dono.", "loadErr": "Não foi possível carregar os dados.", "imgErr": "Não foi possível ler essa imagem.", "locErr": "Não foi possível obter a tua localização. Verifica as permissões.", "notFound": "Local não encontrado.", "searchErr": "Erro na pesquisa.", "unknown": "Desconhecido", "localProf": "Perfil", "language": "Idioma", "langAuto": "Automático", "theme": "Tema", "themeSys": "Sistema", "themeLight": "Claro", "themeDark": "Escuro", "install": "Instalar app", "installBar": "Instala o Pianomaps como app", "notConfirmed": "Não confirmado", "confirmed": "Confirmado", "isTrueQ": "Isto é verdade?", "existsQ": "Este piano existe mesmo aqui?", "yes": "Sim", "no": "Não", "confirmCount": "{n} de {need} confirmações", "thanksVote": "Obrigado pela tua resposta!", "yourPiano": "Adicionaste este piano. Têm de ser outras pessoas a confirmá-lo.", "confirmedBy": "confirmado por {n} pessoas", "nowConfirmed": "Este piano ficou confirmado!", "ownVote": "Não podes confirmar o teu próprio piano.", "addedToast": "O teu piano já está no mapa para todos. Fica verde depois de 10 pessoas o confirmarem.", "redNote": "Visível para todos, vermelho até ser confirmado", "legGreen": "Confirmado", "legRed": "Não confirmado", "anonymous": "Anónimo", "you": "Tu", "name": "Nome", "profileNote": "Guardado neste dispositivo"}};
+const DICT={"en": {"tag": "Find, play and rate public pianos around the world.", "explore": "Explore the map", "addA": "+ Add a piano", "near": "Pianos near me", "search": "Search a city or street…", "account": "Account", "layer": "Map / satellite", "loc": "My location", "prefsT": "Language & theme", "add": "+ Add piano", "pbT": "Move the map to the piano", "pbH": "Zoom in close to see the building.", "confirm": "Confirm location", "cancel": "Cancel", "close": "Close", "setupT": "Almost ready", "setupP": "Open config.js, paste your Supabase URL and key, and upload it again (see README.md).", "noRev": "No reviews yet", "noDesc": "No description.", "addedBy": "Added by", "dir": "Directions", "markV": "Mark as visited", "visited": "✓ Visited", "waiting": "Waiting for verification", "onlyYou": " · only you and the owner can see it", "admin": "Admin", "approve": "Approve", "edit": "Edit", "del": "Delete", "delMine": "Delete my piano", "yourRev": "Your review", "ratePiano": "Rate this piano", "stars": "{n} stars", "commentPh": "Comment: tuning, hours, atmosphere…", "update": "Update", "post": "Post", "delLink": "delete", "myProfile": "My profile", "myVisits": "Places I visited", "settings": "Settings", "appearance": "Language & theme", "adminPanel": "Admin panel", "signOut": "Sign out", "owner": "Site owner", "noBio": "No description yet.", "addedTab": "Added ({n})", "visitedTab": "Visited ({n})", "privateV": "This user keeps their visited places private.", "nothing": "Nothing here yet.", "editProfile": "Edit profile", "menuBack": "‹ Menu", "pending": "Pending", "settingsT": "Settings", "changePhoto": "Change photo", "addPhoto": "Add photo", "username": "Username (unique)", "bioPh": "Tell people about yourself…", "showV": "Show the places I visited on my public profile", "save": "Save", "nameShort": "Username must have at least 3 characters.", "reserved": "That username is reserved.", "taken": "That username is already taken.", "couldNotSave": "Could not save.", "saved": "Saved ✓", "adminT": "Admin panel", "onlyYouSee": "Only you can see this.", "waitingFor": "Waiting for approval ({n})", "nothingPending": "Nothing pending", "allPianos": "All pianos ({n})", "noPianos": "No pianos yet.", "by": "by", "editT": "Edit piano", "approved": "Approved", "pendingO": "Pending", "rmPhoto": "Remove photo", "checkFields": "Check the name and coordinates.", "piApproved": "Piano approved ✓", "couldNotApprove": "Could not approve.", "confDelPiano": "Delete this piano and its reviews?", "confDelRev": "Delete this review?", "couldNotDelete": "Could not delete.", "latitude": "Latitude", "longitude": "Longitude", "signIn": "Sign in", "createAcc": "Create account", "signUp": "Sign up", "authMsg": "Create a free account, or sign in, to add, confirm, rate and comment on pianos.", "uniqPh": "Unique username", "emailPh": "Email", "passPh": "Password (min. 6 characters)", "google": "Continue with Google", "noAcc": "No account? Sign up", "haveAcc": "Have an account? Sign in", "forgot": "Forgot password?", "newPwT": "New password", "savePw": "Save password", "enterCreds": "Enter your email and a password with 6+ characters.", "wrong": "Something went wrong.", "created": "Account created! Check your email to confirm it, then sign in.", "enterEmail": "Enter your email first.", "resetSent": "Check your email for a reset link.", "pw6": "6+ characters, please.", "pwUpdated": "Password updated ✓", "needVisit": "Sign in to mark places as visited.", "needReview": "Sign in to post a review.", "needAdd": "Sign in to add a piano.", "choose": "Choose 1 to 5 stars.", "newPiano": "New piano", "verifyNote": " · will be published after verification", "namePh": "Name / location (e.g. Central Station)", "descPh": "Description: tuning, opening hours, access…", "savePiano": "Save piano", "nameNeeded": "Please name the piano.", "thanks": "Thanks! Your piano will appear for everyone once the owner verifies it.", "loadErr": "Could not load data.", "imgErr": "Could not read that image.", "locErr": "Could not get your location. Check permissions.", "notFound": "Place not found.", "searchErr": "Search error.", "unknown": "Unknown", "localProf": "Profile", "language": "Language", "langAuto": "Auto", "theme": "Theme", "themeSys": "System", "themeLight": "Light", "themeDark": "Dark", "install": "Install app", "installBar": "Install Pianomaps as an app", "notConfirmed": "Not confirmed", "confirmed": "Confirmed", "isTrueQ": "Is this true?", "existsQ": "Does this piano really exist here?", "yes": "Yes", "no": "No", "confirmCount": "{n} of {need} confirmations", "thanksVote": "Thanks for your answer!", "yourPiano": "You added this piano. Other people need to confirm it.", "confirmedBy": "confirmed by {n} people", "nowConfirmed": "This piano is now confirmed!", "ownVote": "You can’t confirm your own piano.", "addedToast": "Your piano is now on the map for everyone. It turns green after 10 people confirm it.", "redNote": "Visible to everyone, red until confirmed", "legGreen": "Confirmed", "legRed": "Not confirmed", "anonymous": "Anonymous", "you": "You", "name": "Name", "profileNote": "Saved on this device", "or": "or", "apple": "Continue with Apple", "migT": "Migrate your old account", "migP": "Pianomaps has been upgraded. Your account, pianos, reviews and visited places are all kept. To finish, choose a new password (at least 8 characters).", "migPass": "New password (min. 8 characters)", "migBtn": "Finish migration", "migDone": "Account migrated.", "needVote": "Sign in to say whether this piano really exists.", "pass2Ph": "Repeat password", "pwMismatch": "The passwords don’t match.", "pw8": "Use a password with at least 8 characters.", "badLogin": "Wrong email or password.", "emailTaken": "That email already has an account. Try signing in.", "emailNotConfirmed": "Please confirm your email first (check your inbox).", "rateLimit": "Too many attempts. Please wait a few minutes.", "radioT": "Music", "musicOn": "Music on", "musicOff": "Music off", "play": "Play", "pause": "Pause", "next": "Next track", "volume": "Volume", "credits": "Music credits", "creditsIntro": "Recordings from Wikimedia Commons (public domain or free licences). Tap a title to see its author and licence.", "synth": "synthesized", "musicUnavailable": "Music is unavailable right now."}, "pt": {"tag": "Encontra, toca e avalia pianos públicos em todo o mundo.", "explore": "Explorar o mapa", "addA": "+ Adicionar um piano", "near": "Pianos perto de mim", "search": "Procurar cidade ou rua…", "account": "Conta", "layer": "Mapa / satélite", "loc": "A minha localização", "prefsT": "Idioma e tema", "add": "+ Adicionar piano", "pbT": "Move o mapa até ao piano", "pbH": "Aproxima bem para ver o edifício.", "confirm": "Confirmar local", "cancel": "Cancelar", "close": "Fechar", "setupT": "Quase pronto", "setupP": "Abre o config.js, cola o URL e a chave do Supabase e volta a carregá-lo (vê o README.md).", "noRev": "Ainda sem avaliações", "noDesc": "Sem descrição.", "addedBy": "Adicionado por", "dir": "Como chegar", "markV": "Marcar como visitado", "visited": "✓ Visitado", "waiting": "A aguardar verificação", "onlyYou": " · só tu e o dono podem ver", "admin": "Admin", "approve": "Aprovar", "edit": "Editar", "del": "Eliminar", "delMine": "Eliminar o meu piano", "yourRev": "A tua avaliação", "ratePiano": "Avaliar este piano", "stars": "{n} estrelas", "commentPh": "Comentário: afinação, horário, ambiente…", "update": "Atualizar", "post": "Publicar", "delLink": "eliminar", "myProfile": "O meu perfil", "myVisits": "Locais que visitei", "settings": "Definições", "appearance": "Idioma e tema", "adminPanel": "Painel de admin", "signOut": "Terminar sessão", "owner": "Dono do site", "noBio": "Ainda sem descrição.", "addedTab": "Adicionados ({n})", "visitedTab": "Visitados ({n})", "privateV": "Este utilizador mantém os locais visitados privados.", "nothing": "Ainda nada por aqui.", "editProfile": "Editar perfil", "menuBack": "‹ Menu", "pending": "Pendente", "settingsT": "Definições", "changePhoto": "Mudar foto", "addPhoto": "Adicionar foto", "username": "Nome de utilizador (único)", "bioPh": "Fala um pouco sobre ti…", "showV": "Mostrar os locais que visitei no meu perfil público", "save": "Guardar", "nameShort": "O nome de utilizador deve ter pelo menos 3 caracteres.", "reserved": "Esse nome de utilizador está reservado.", "taken": "Esse nome de utilizador já está em uso.", "couldNotSave": "Não foi possível guardar.", "saved": "Guardado ✓", "adminT": "Painel de admin", "onlyYouSee": "Só tu vês isto.", "waitingFor": "A aguardar aprovação ({n})", "nothingPending": "Nada pendente", "allPianos": "Todos os pianos ({n})", "noPianos": "Ainda sem pianos.", "by": "por", "editT": "Editar piano", "approved": "Aprovado", "pendingO": "Pendente", "rmPhoto": "Remover foto", "checkFields": "Verifica o nome e as coordenadas.", "piApproved": "Piano aprovado ✓", "couldNotApprove": "Não foi possível aprovar.", "confDelPiano": "Eliminar este piano e as suas avaliações?", "confDelRev": "Eliminar esta avaliação?", "couldNotDelete": "Não foi possível eliminar.", "latitude": "Latitude", "longitude": "Longitude", "signIn": "Entrar", "createAcc": "Criar conta", "signUp": "Registar", "authMsg": "Cria uma conta grátis, ou entra, para adicionar, confirmar, avaliar e comentar pianos.", "uniqPh": "Nome de utilizador único", "emailPh": "Email", "passPh": "Palavra-passe (mín. 6 caracteres)", "google": "Continuar com o Google", "noAcc": "Sem conta? Regista-te", "haveAcc": "Já tens conta? Entra", "forgot": "Esqueceste a palavra-passe?", "newPwT": "Nova palavra-passe", "savePw": "Guardar palavra-passe", "enterCreds": "Indica o email e uma palavra-passe com 6 ou mais caracteres.", "wrong": "Algo correu mal.", "created": "Conta criada! Confirma o teu email e depois entra.", "enterEmail": "Indica primeiro o teu email.", "resetSent": "Vê o teu email para o link de recuperação.", "pw6": "Mínimo de 6 caracteres.", "pwUpdated": "Palavra-passe atualizada ✓", "needVisit": "Entra para marcar locais como visitados.", "needReview": "Entra para publicar uma avaliação.", "needAdd": "Entra para adicionar um piano.", "choose": "Escolhe de 1 a 5 estrelas.", "newPiano": "Novo piano", "verifyNote": " · será publicado após verificação", "namePh": "Nome / local (ex.: Gare do Oriente)", "descPh": "Descrição: afinação, horários, acesso…", "savePiano": "Guardar piano", "nameNeeded": "Dá um nome ao piano.", "thanks": "Obrigado! O piano ficará visível para todos depois de verificado pelo dono.", "loadErr": "Não foi possível carregar os dados.", "imgErr": "Não foi possível ler essa imagem.", "locErr": "Não foi possível obter a tua localização. Verifica as permissões.", "notFound": "Local não encontrado.", "searchErr": "Erro na pesquisa.", "unknown": "Desconhecido", "localProf": "Perfil", "language": "Idioma", "langAuto": "Automático", "theme": "Tema", "themeSys": "Sistema", "themeLight": "Claro", "themeDark": "Escuro", "install": "Instalar app", "installBar": "Instala o Pianomaps como app", "notConfirmed": "Não confirmado", "confirmed": "Confirmado", "isTrueQ": "Isto é verdade?", "existsQ": "Este piano existe mesmo aqui?", "yes": "Sim", "no": "Não", "confirmCount": "{n} de {need} confirmações", "thanksVote": "Obrigado pela tua resposta!", "yourPiano": "Adicionaste este piano. Têm de ser outras pessoas a confirmá-lo.", "confirmedBy": "confirmado por {n} pessoas", "nowConfirmed": "Este piano ficou confirmado!", "ownVote": "Não podes confirmar o teu próprio piano.", "addedToast": "O teu piano já está no mapa para todos. Fica verde depois de 10 pessoas o confirmarem.", "redNote": "Visível para todos, vermelho até ser confirmado", "legGreen": "Confirmado", "legRed": "Não confirmado", "anonymous": "Anónimo", "you": "Tu", "name": "Nome", "profileNote": "Guardado neste dispositivo", "or": "ou", "apple": "Continuar com a Apple", "migT": "Migração de conta antiga", "migP": "O Pianomaps foi atualizado. A tua conta, os pianos, as avaliações e os locais visitados ficam todos guardados. Para concluir, escolhe uma palavra-passe nova (mínimo 8 caracteres).", "migPass": "Palavra-passe nova (mín. 8 caracteres)", "migBtn": "Concluir migração", "migDone": "Conta migrada.", "needVote": "Entra para dizeres se este piano existe mesmo.", "pass2Ph": "Repete a palavra-passe", "pwMismatch": "As palavras-passe não coincidem.", "pw8": "Usa uma palavra-passe com pelo menos 8 caracteres.", "badLogin": "Email ou palavra-passe errados.", "emailTaken": "Esse email já tem conta. Tenta entrar.", "emailNotConfirmed": "Confirma primeiro o teu email (vê a caixa de entrada).", "rateLimit": "Demasiadas tentativas. Espera alguns minutos.", "radioT": "Música", "musicOn": "Música ligada", "musicOff": "Música desligada", "play": "Reproduzir", "pause": "Pausar", "next": "Próxima música", "volume": "Volume", "credits": "Créditos da música", "creditsIntro": "Gravações do Wikimedia Commons (domínio público ou licenças livres). Toca num título para ver o autor e a licença.", "synth": "sintetizado", "musicUnavailable": "A música não está disponível neste momento."}};
 let langPref=localStorage.getItem("pm_lang")||"auto",theme=localStorage.getItem("pm_theme")||"system";
 const lang=()=>langPref!=="auto"?langPref:((navigator.language||"en").toLowerCase().startsWith("pt")?"pt":"en");
 const t=(k,v)=>{let s=(DICT[lang()]||DICT.en)[k]??DICT.en[k]??k;if(v)for(const x in v)s=s.replace("{"+x+"}",v[x]);return s};
@@ -196,6 +225,7 @@ function applyLang(){
   document.querySelectorAll("[data-i18n-ph]").forEach(e=>e.placeholder=t(e.dataset.i18nPh));
   document.querySelectorAll("[data-i18n-aria]").forEach(e=>e.setAttribute("aria-label",t(e.dataset.i18nAria)));
   $("iLang").textContent=lang().toUpperCase();
+  if(typeof Music!=="undefined")Music.ui();
 }
 const setLang=v=>{langPref=v;localStorage.setItem("pm_lang",v);applyLang();setAcct()};
 const setTheme=v=>{theme=v;localStorage.setItem("pm_theme",v);applyTheme()};
@@ -210,43 +240,50 @@ const carto=L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{
 let okTiles=false,errs=0;
 street.on("tileload",()=>okTiles=true);
 street.on("tileerror",()=>{if(!okTiles&&++errs===6&&!isSat){map.removeLayer(street);carto.addTo(map)}});
-street.addTo(map);L.control.zoom({position:"bottomleft"}).addTo(map);
+street.addTo(map);L.control.zoom({position:"topright"}).addTo(map);
 let isSat=false;
 $("layer").onclick=()=>{if(isSat){map.removeLayer(sat);(errs>=6&&!okTiles?carto:street).addTo(map)}else{map.removeLayer(street);map.removeLayer(carto);sat.addTo(map)}isSat=!isSat;applyTheme()};
 
-// ===== this device (anonymous id, profile, visited, what I did) =====
-const LS=(k,d)=>{try{return JSON.parse(localStorage.getItem("pm_"+k))??d}catch(e){return d}};
-const SV=(k,v)=>{try{localStorage.setItem("pm_"+k,JSON.stringify(v))}catch(e){alert(t("couldNotSave"))}};
-const newId=()=>crypto.randomUUID?crypto.randomUUID():"xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g,c=>{const r=Math.random()*16|0;return(c==="x"?r:(r&3|8)).toString(16)});
-const VID=(()=>{let v=localStorage.getItem("pm_vid");if(!v){v=newId();localStorage.setItem("pm_vid",v)}return v})();
-let profile=LS("profile",{name:"",bio:"",avatar:""}),visits=LS("visits",[]),mineIds=LS("mine",[]),voted=LS("voted",{}),myRev=LS("revd",{});
-let pianos=[],reviews=[],markers={},seen=new Set(),sel=null,rate=0,pending=null,photo=null,vk="",lastKey="";
+// ===== state =====
+let providers={google:false,apple:false},user=null,profiles={},pianos=[],reviews=[],visits=[],myVotes={},markers={},seen=new Set(),sel=null,rate=0,pending=null,photo=null,vk="",lastKey="",authMode="in",afterAuth=null;
+const norm=s=>String(s).trim().toLowerCase().replace(/[áàâãä]/g,"a").replace(/[éèêë]/g,"e").replace(/[íìîï]/g,"i").replace(/[óòôõö]/g,"o").replace(/[úùûü]/g,"u").replace(/ç/g,"c");
+const me=()=>user?profiles[user.id]:null;
+const nameOf=id=>profiles[id]?.username||t("anonymous");
+const av=(id,s=36)=>{const p=profiles[id];return `<span class="av" style="width:${s}px;height:${s}px;font-size:${Math.round(s*.45)}px">${p?.avatar_url?`<img src="${esc(p.avatar_url)}" alt="">`:esc((p?.username||"?")[0].toUpperCase())}</span>`};
 const confirmed=p=>p.yes>=NEED;
 const revsOf=id=>reviews.filter(r=>r.place_id===id);
 const avg=id=>{const r=revsOf(id);return r.length?r.reduce((a,b)=>a+b.rating,0)/r.length:0};
 const stars=n=>"★".repeat(Math.round(n))+"☆".repeat(5-Math.round(n));
 const rtxt=id=>revsOf(id).length?`<span class="star">${stars(avg(id))}</span> ${avg(id).toFixed(1)} · ${revsOf(id).length}`:t("noRev");
-const hasVisited=id=>visits.includes(id);
+const visitedBy=uid=>visits.filter(v=>v.user_id===uid).map(v=>v.place_id);
+const hasVisited=id=>!!user&&visits.some(v=>v.user_id===user.id&&v.place_id===id);
 const fdate=d=>d?new Date(d).toLocaleDateString(lang()==="pt"?"pt-PT":"en-GB"):"";
-const av=(s=36)=>`<span class="av" style="width:${s}px;height:${s}px;font-size:${Math.round(s*.45)}px">${profile.avatar?`<img src="${esc(profile.avatar)}" alt="">`:esc((profile.name||"?")[0].toUpperCase())}</span>`;
+const newId=()=>crypto.randomUUID?crypto.randomUUID():"xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g,c=>{const r=Math.random()*16|0;return(c==="x"?r:(r&3|8)).toString(16)});
 function toast(m){const e=$("toast");e.style.animation="none";void e.offsetWidth;e.style.animation="";e.textContent=m;e.style.display="block";clearTimeout(toast.t);toast.t=setTimeout(()=>e.style.display="none",5000)}
 function diag(e){const b=$("banner");b.textContent=t("loadErr")+" ("+((e&&e.message)||e)+")";b.style.display="block";b.style.background="#c62828";console.error(e)}
 function resize(file,max){return new Promise((res,rej)=>{const img=new Image(),u=URL.createObjectURL(file);
   img.onload=()=>{const s=Math.min(1,max/Math.max(img.width,img.height)),c=document.createElement("canvas");c.width=Math.round(img.width*s);c.height=Math.round(img.height*s);
     c.getContext("2d").drawImage(img,0,0,c.width,c.height);URL.revokeObjectURL(u);c.toBlob(b=>b?res(b):rej(),"image/jpeg",.8)};img.onerror=rej;img.src=u})}
-const toData=b=>new Promise(r=>{const f=new FileReader();f.onload=()=>r(f.result);f.readAsDataURL(b)});
+async function upload(blob,name){
+  const path=`${user.id}/${name}`,up=await sb.storage.from("photos").upload(path,blob,{contentType:"image/jpeg"});
+  if(up.error)throw up.error;return sb.storage.from("photos").getPublicUrl(path).data.publicUrl}
 
 // ===== shared data (Supabase) =====
 async function load(){
   if(!SB)return;
   try{
-    const rs=await Promise.all([sb.from("places_public").select("*"),sb.from("place_stats").select("*"),sb.from("reviews_public").select("*")]);
-    const bad=rs.find(r=>r.error);if(bad)throw bad.error;
+    const q=["places","place_stats","place_reviews","profiles","visits"].map(x=>sb.from(x).select("*"));
+    if(user)q.push(sb.from("place_votes").select("place_id,yes"));
+    const rs=await Promise.all(q),bad=rs.find(r=>r.error);if(bad)throw bad.error;
     const st=Object.fromEntries(rs[1].data.map(s=>[s.place_id,s]));
-    pianos=rs[0].data.map(p=>({...p,yes:+(st[p.id]?.yes||0),no:+(st[p.id]?.no||0)}));reviews=rs[2].data;
+    pianos=rs[0].data.map(p=>({...p,yes:+(st[p.id]?.yes||0),no:+(st[p.id]?.no||0)}));
+    reviews=rs[2].data;profiles=Object.fromEntries(rs[3].data.map(p=>[p.id,p]));visits=rs[4].data;
+    myVotes=user?Object.fromEntries(rs[5].data.map(v=>[v.place_id,v.yes])):{};
+    if(user&&!profiles[user.id]){try{const {data}=await sb.from("profiles").insert({id:user.id,username:(user.user_metadata?.name||user.email.split("@")[0]).slice(0,24)+Math.floor(10+Math.random()*90)}).select().single();if(data)profiles[user.id]=data}catch(e){}}
     $("banner").style.display="none";
   }catch(e){diag(e)}
   setAcct();draw();
+  if(migrateNeeded()&&!$("modal").classList.contains("locked"))showMigrate();
 }
 
 // ===== map markers: green = confirmed, red = not confirmed yet =====
@@ -259,28 +296,33 @@ function draw(){
   if(sel&&$("sheet").dataset.mode==="piano")showPiano();
 }
 function setAcct(){
-  $("acct").innerHTML=profile.avatar?`<img src="${esc(profile.avatar)}" alt="" style="width:100%;height:100%;border-radius:50%;object-fit:cover">`:(profile.name?esc(profile.name[0].toUpperCase()):ICON_USER);
+  const p=me();
+  $("acct").innerHTML=p?(p.avatar_url?`<img src="${esc(p.avatar_url)}" alt="" style="width:100%;height:100%;border-radius:50%;object-fit:cover">`:esc(p.username[0].toUpperCase())):ICON_USER;
 }
 
-// ===== sheet =====
+// ===== sheet (bottom panel) and modal (login popup) =====
+let lastKeyShown="";
 const mode=(m,x="")=>{$("sheet").dataset.mode=m;vk=m+":"+x};
 const sheet=h=>{const s=$("sheet"),fresh=!s.classList.contains("open")||vk!==lastKey;lastKey=vk;
-  s.innerHTML='<div class="grab"></div>'+h;s.classList.add("open");s.classList.toggle("anim",fresh);if(fresh)s.scrollTop=0};
-const closeSheet=()=>{$("sheet").classList.remove("open");sel=null;rate=0;photo=null;lastKey="";mode("");draw()};
+  s.innerHTML='<div class="grab"></div>'+h;s.classList.add("open");document.body.classList.add("sheet-open");s.classList.toggle("anim",fresh);if(fresh)s.scrollTop=0};
+const closeSheet=()=>{$("sheet").classList.remove("open");document.body.classList.remove("sheet-open");sel=null;rate=0;photo=null;lastKey="";mode("");draw()};
+const openModal=(h,locked)=>{$("modal").innerHTML=`<div class="mbox">${locked?"":`<button class="x" data-act="mclose" aria-label="${t("close")}">✕</button>`}${h}</div>`;$("modal").classList.toggle("locked",!!locked);$("modal").classList.add("open")};
+const closeModal=()=>{$("modal").classList.remove("open","locked")};
 const pcard=p=>`<button class="pc" data-act="go" data-id="${p.id}">${p.photo_url?`<img src="${esc(p.photo_url)}" alt="">`:"<span>♪</span>"}<div><b>${esc(p.name)}</b> <span class="badge ${confirmed(p)?"ok":"no"}">${confirmed(p)?t("confirmed"):t("notConfirmed")}</span><div class="mut">${rtxt(p.id)}</div></div></button>`;
 const photoInput=k=>`<label class="b">${k==="avatar"?t("changePhoto"):t("addPhoto")}<input type="file" accept="image/*" data-photo="${k}" hidden></label>`;
+const userLink=id=>`<a href="#" data-act="profile" data-id="${id}" style="color:inherit;font-weight:600">${esc(nameOf(id))}</a>`;
 
 function openPiano(id){const p=pianos.find(x=>x.id===id);if(!p)return;sel=id;rate=0;map.flyTo([p.lat,p.lng],Math.max(map.getZoom(),19));draw();showPiano()}
 function showPiano(){
   const p=pianos.find(x=>x.id===sel);if(!p)return;mode("piano",p.id);
-  const keep=$("rText")?.value||"",mine=myRev[p.id];if(!rate&&mine)rate=mine.rating;
-  const ok=confirmed(p),own=mineIds.includes(p.id),v=voted[p.id];
+  const keep=$("rText")?.value||"",mine=user?revsOf(p.id).find(x=>x.user_id===user.id):null;if(!rate&&mine)rate=mine.rating;
+  const ok=confirmed(p),own=!!user&&p.user_id===user.id,v=myVotes[p.id];
   sheet(`${p.photo_url?`<img class="pimg" src="${esc(p.photo_url)}" alt="">`:""}
   <h2>${esc(p.name)}</h2>
   <div style="margin-top:4px"><span class="badge ${ok?"ok":"no"}">${ok?t("confirmed"):t("notConfirmed")}</span></div>
   <div class="mut" style="margin-top:6px">${rtxt(p.id)}</div>
   <p>${esc(p.description)||`<span class="mut">${t("noDesc")}</span>`}</p>
-  ${p.author?`<div class="mut">${t("addedBy")} <b>${esc(p.author)}</b></div>`:""}
+  ${p.user_id&&profiles[p.user_id]?`<div class="mut">${t("addedBy")} ${userLink(p.user_id)}</div>`:""}
   ${ok?`<div class="vbox ok"><b>${t("confirmed")}</b> · ${t("confirmedBy",{n:p.yes})}</div>`
     :`<div class="vbox"><div class="mut">${t("confirmCount",{n:p.yes,need:NEED})}</div><div class="bar"><i style="width:${Math.min(100,p.yes/NEED*100)}%"></i></div>
       ${own?`<div class="mut">${t("yourPiano")}</div>`
@@ -294,19 +336,21 @@ function showPiano(){
     <div class="stars">${[1,2,3,4,5].map(n=>`<button data-act="rate" data-r="${n}" class="${n<=rate?"on":""}" aria-label="${t("stars",{n})}">★</button>`).join("")}</div>
     <textarea id="rText" rows="2" placeholder="${t("commentPh")}" maxlength="400">${esc(keep||mine?.text||"")}</textarea>
     <div class="acts"><button class="b fill" data-act="post">${mine?t("update"):t("post")}</button>${mine?`<button class="b" data-act="delRev">${t("del")}</button>`:""}</div></div>
-  <div style="margin-top:8px">${revsOf(p.id).sort((a,b)=>String(b.created_at).localeCompare(String(a.created_at))).map(r=>`<div class="rev"><div class="uh" style="gap:8px"><b>${esc(r.author||t("anonymous"))}</b><span class="star">${stars(r.rating)}</span></div>
+  <div style="margin-top:8px">${revsOf(p.id).sort((a,b)=>String(b.created_at).localeCompare(String(a.created_at))).map(r=>`<div class="rev"><div class="uh" style="gap:8px">${av(r.user_id,28)}${userLink(r.user_id)}<span class="star">${stars(r.rating)}</span></div>
     <div>${esc(r.text)}</div><div class="mut">${fdate(r.created_at)}</div></div>`).join("")}</div>`);
 }
 
-// ===== menu / profile / settings / preferences (profile + visited stay on this device) =====
+// ===== menu / profile / settings / preferences / credits =====
 function showMenu(){
-  mode("menu");
-  sheet(`<div class="uh">${av(56)}<div><h2>${esc(profile.name||t("you"))}</h2><div class="mut">${t("profileNote")}</div></div></div>
+  if(!user)return needAuth();
+  mode("menu");const p=me()||{username:"…"};
+  sheet(`<div class="uh">${av(user.id,56)}<div><h2>${esc(p.username)}</h2><div class="mut">${esc(user.email||"")}</div></div></div>
   <div class="menu">
-    <button data-act="profile">${t("myProfile")}</button>
-    <button data-act="profile" data-tab="v">${t("myVisits")}</button>
+    <button data-act="profile" data-id="${user.id}">${t("myProfile")}</button>
+    <button data-act="profile" data-id="${user.id}" data-tab="v">${t("myVisits")}</button>
     <button data-act="settings">${t("settings")}</button>
     <button data-act="prefs">${t("appearance")}</button>
+    <button data-act="signout">${t("signOut")}</button>
   </div><div class="acts"><button class="b" data-act="close">${t("close")}</button></div>`);
 }
 function showPrefs(){
@@ -317,94 +361,187 @@ function showPrefs(){
   ${deferredInstall?`<h3>${t("install")}</h3><div class="acts"><button class="b fill" data-act="install">${t("install")}</button></div>`:""}
   <div class="acts"><button class="b" data-act="close">${t("close")}</button></div>`);
 }
-function showProfile(tab="a"){
-  mode("profile");const added=pianos.filter(p=>mineIds.includes(p.id)),vis=visits.map(i=>pianos.find(x=>x.id===i)).filter(Boolean),list=tab==="a"?added:vis;
-  sheet(`<div class="uh">${av(64)}<div><h2>${esc(profile.name||t("you"))}</h2></div></div>
-  <p>${esc(profile.bio)||`<span class="mut">${t("noBio")}</span>`}</p>
-  <div class="tabs"><button class="${tab==="a"?"on":""}" data-act="profile" data-tab="a">${t("addedTab",{n:added.length})}</button><button class="${tab==="v"?"on":""}" data-act="profile" data-tab="v">${t("visitedTab",{n:vis.length})}</button></div>
-  ${list.length?list.map(pcard).join(""):`<p class="mut">${t("nothing")}</p>`}
-  <div class="acts"><button class="b" data-act="settings">${t("editProfile")}</button><button class="b" data-act="menu">${t("menuBack")}</button></div>`);
+function showProfile(id,tab="a"){
+  const p=profiles[id];if(!p)return;mode("profile",id);const own=!!user&&id===user.id;
+  const canV=own||p.show_visited!==false;
+  const added=pianos.filter(x=>x.user_id===id),vis=canV?visitedBy(id).map(i=>pianos.find(x=>x.id===i)).filter(Boolean):[],list=tab==="a"?added:vis;
+  sheet(`<div class="uh">${av(id,64)}<div><h2>${esc(p.username)}</h2></div></div>
+  <p>${esc(p.bio)||`<span class="mut">${t("noBio")}</span>`}</p>
+  <div class="tabs"><button class="${tab==="a"?"on":""}" data-act="profile" data-id="${id}" data-tab="a">${t("addedTab",{n:added.length})}</button><button class="${tab==="v"?"on":""}" data-act="profile" data-id="${id}" data-tab="v">${t("visitedTab",{n:canV?vis.length:"–"})}</button></div>
+  ${tab==="v"&&!canV?`<p class="mut">${t("privateV")}</p>`:list.length?list.map(pcard).join(""):`<p class="mut">${t("nothing")}</p>`}
+  <div class="acts">${own?`<button class="b" data-act="settings">${t("editProfile")}</button><button class="b" data-act="menu">${t("menuBack")}</button>`:`<button class="b" data-act="close">${t("close")}</button>`}</div>`);
 }
 function showSettings(){
-  mode("settings");photo=null;
+  mode("settings");photo=null;const p=me()||{};
   sheet(`<h2>${t("settingsT")}</h2>
-  <div class="uh" style="margin:10px 0"><span id="avp">${av(64)}</span>${photoInput("avatar")}</div>
-  <input id="sName" value="${esc(profile.name)}" maxlength="30" placeholder="${t("name")}">
-  <textarea id="sBio" rows="3" maxlength="200" placeholder="${t("bioPh")}">${esc(profile.bio)}</textarea>
-  <div class="acts"><button class="b fill" data-act="saveSettings">${t("save")}</button><button class="b" data-act="menu">${t("cancel")}</button></div>`);
+  <div class="uh" style="margin:10px 0"><span id="avp">${av(user.id,64)}</span>${photoInput("avatar")}</div>
+  <label class="mut">${t("username")}</label><input id="sName" value="${esc(p.username||"")}" maxlength="30">
+  <textarea id="sBio" rows="3" maxlength="200" placeholder="${t("bioPh")}">${esc(p.bio||"")}</textarea>
+  <label class="chk"><input type="checkbox" id="sVis" ${p.show_visited!==false?"checked":""}> ${t("showV")}</label>
+  <div class="acts"><button class="b fill" data-act="saveSettings">${t("save")}</button><button class="b" data-act="menu">${t("cancel")}</button></div><div class="mut" id="sMsg" style="margin-top:8px"></div>`);
+}
+function showCredits(){
+  mode("credits");
+  sheet(`<h2>${t("credits")}</h2><p class="mut">${t("creditsIntro")}</p>
+  ${TRACKS.map(k=>`<div class="rev"><a href="${k.page}" target="_blank" rel="noopener" style="color:inherit"><b>${esc(k.c)}</b> — ${esc(k.t)}</a>${k.syn?` <span class="mut">(${t("synth")})</span>`:""}<div class="mut">${esc([k.p,k.l].filter(Boolean).join(" · "))||"Wikimedia Commons"}</div></div>`).join("")}
+  <div class="acts"><button class="b" data-act="close">${t("close")}</button></div>`);
 }
 
+// ===== accounts: login / sign-up popup =====
+async function loadProviders(){
+  try{const r=await fetch(SUPABASE_URL+"/auth/v1/settings",{headers:{apikey:SUPABASE_KEY}}),j=await r.json();
+    providers={google:!!(j.external&&j.external.google),apple:!!(j.external&&j.external.apple)};
+    if($("modal").classList.contains("open")&&$("aEmail")&&!$("modal").classList.contains("locked"))showAuth()}catch(e){}
+}
+const migrateNeeded=()=>!!user&&!!me()&&!me().migrated_at;
+function showMigrate(){
+  openModal(`<h2>${t("migT")}</h2><div class="mut">${t("migP")}</div>
+  <input id="mPass" type="password" placeholder="${t("migPass")}" autocomplete="new-password">
+  <input id="mPass2" type="password" placeholder="${t("pass2Ph")}" autocomplete="new-password">
+  <div class="acts"><button class="b fill" data-act="migrate">${t("migBtn")}</button><button class="b" data-act="signout2">${t("signOut")}</button></div><div class="mut" id="aMsg" style="margin-top:8px"></div>`,true);
+}
+function needAuth(msg,cb){if(user)return true;afterAuth=cb||null;authMode="in";showAuth(msg);return false}
+function showAuth(msg){
+  const inn=authMode==="in";
+  openModal(`<h2>${inn?t("signIn"):t("createAcc")}</h2><div class="mut" id="aMsg">${esc(msg||t("authMsg"))}</div>
+  ${inn?"":`<input id="aName" placeholder="${t("uniqPh")}" maxlength="30" autocomplete="nickname">`}
+  <input id="aEmail" type="email" placeholder="${t("emailPh")}" autocomplete="email">
+  <input id="aPass" type="password" placeholder="${t("passPh")}" autocomplete="${inn?"current-password":"new-password"}">
+  ${inn?"":`<input id="aPass2" type="password" placeholder="${t("pass2Ph")}" autocomplete="new-password">`}
+  <div class="acts"><button class="b fill" data-act="authGo">${inn?t("signIn"):t("signUp")}</button></div>
+  ${providers.google||providers.apple?`<div class="or"><span>${t("or")}</span></div><div class="acts oauth">${providers.google?`<button class="b" data-act="oauth" data-p="google">${t("google")}</button>`:""}${providers.apple?`<button class="b" data-act="oauth" data-p="apple">${t("apple")}</button>`:""}</div>`:""}
+  <div class="acts" style="margin-top:2px"><button class="b" data-act="authSwap" style="border-color:transparent;padding-left:0">${inn?t("noAcc"):t("haveAcc")}</button>${inn?`<button class="b" data-act="forgot" style="border-color:transparent">${t("forgot")}</button>`:""}</div>`);
+  setTimeout(()=>{const f=$(inn?"aEmail":"aName");if(f&&!/iPhone|iPad|Android/i.test(navigator.userAgent))f.focus()},50);
+}
+function showNewPw(){openModal(`<h2>${t("newPwT")}</h2><input id="nPass" type="password" placeholder="${t("newPwT")}" autocomplete="new-password"><div class="acts"><button class="b fill" data-act="newPw">${t("savePw")}</button></div><div class="mut" id="aMsg"></div>`)}
+const authErr=m=>/invalid login/i.test(m)?t("badLogin"):/already registered|already been registered/i.test(m)?t("emailTaken"):/not confirmed/i.test(m)?t("emailNotConfirmed"):/rate limit/i.test(m)?t("rateLimit"):m||t("wrong");
+
 // ===== actions =====
+const say=(id,m)=>{const e=$(id);if(e)e.textContent=m};
 const acts={
-  close:()=>closeSheet(), menu:()=>showMenu(), go:el=>openPiano(el.dataset.id), prefs:()=>showPrefs(), install:()=>install(),
+  close:()=>closeSheet(), mclose:()=>closeModal(), menu:()=>showMenu(), go:el=>openPiano(el.dataset.id), prefs:()=>showPrefs(), install:()=>install(), credits:()=>showCredits(),
   lang:el=>{setLang(el.dataset.v);showPrefs()}, theme:el=>{setTheme(el.dataset.v);showPrefs()},
-  profile:el=>showProfile(el.dataset.tab||"a"), settings:()=>showSettings(),
+  profile:el=>showProfile(el.dataset.id,el.dataset.tab||"a"), settings:()=>showSettings(),
   rate:el=>{rate=+el.dataset.r;showPiano()},
-  visit(){visits=hasVisited(sel)?visits.filter(i=>i!==sel):[...visits,sel];SV("visits",visits);showPiano()},
+  async signout(){await sb.auth.signOut();closeSheet()},
+  async visit(){
+    if(!needAuth(t("needVisit")))return;
+    const id=sel;
+    try{
+      if(hasVisited(id)){const {error}=await sb.from("visits").delete().eq("place_id",id).eq("user_id",user.id);if(error)throw error;visits=visits.filter(v=>!(v.user_id===user.id&&v.place_id===id))}
+      else{const {error}=await sb.from("visits").insert({place_id:id});if(error)throw error;visits.push({user_id:user.id,place_id:id})}
+      showPiano();
+    }catch(e){alert(t("couldNotSave"))}
+  },
   async vote(el){
+    if(!needAuth(t("needVote")))return;
     const yes=el.dataset.v==="1";el.disabled=true;
-    const {error}=await sb.from("place_votes").insert({place_id:sel,voter:VID,yes});
+    const {error}=await sb.from("place_votes").insert({place_id:sel,yes});
     if(error&&error.code!=="23505"){alert(/own_piano/.test(error.message||"")?t("ownVote"):t("couldNotSave"));el.disabled=false;return}
-    voted[sel]=yes;SV("voted",voted);
+    myVotes[sel]=yes;
     const p=pianos.find(x=>x.id===sel);
     if(p&&!error){yes?p.yes++:p.no++;if(yes&&p.yes===NEED)toast(t("nowConfirmed"))}
     draw();load();
   },
   async post(el){
+    if(!needAuth(t("needReview")))return;
     if(!rate){alert(t("choose"));return}
     el.disabled=true;
     try{
-      if(myRev[sel]){const d=await sb.rpc("delete_my_review",{p_place:sel,p_voter:VID});if(d.error)throw d.error}
-      const text=$("rText").value.trim();
-      const {error}=await sb.from("place_reviews").insert({place_id:sel,voter:VID,author:profile.name||null,rating:rate,text});
-      if(error)throw error;
-      myRev[sel]={rating:rate,text};SV("revd",myRev);rate=0;await load();showPiano();
+      const {error}=await sb.from("place_reviews").upsert({place_id:sel,user_id:user.id,rating:rate,text:$("rText").value.trim()},{onConflict:"place_id,user_id"});
+      if(error)throw error;rate=0;await load();showPiano();
     }catch(e){alert(t("couldNotSave"));el.disabled=false}
   },
   async delRev(){
     if(!confirm(t("confDelRev")))return;
-    const {error}=await sb.rpc("delete_my_review",{p_place:sel,p_voter:VID});if(error){alert(t("couldNotDelete"));return}
-    delete myRev[sel];SV("revd",myRev);rate=0;await load();showPiano();
+    const {error}=await sb.from("place_reviews").delete().eq("place_id",sel).eq("user_id",user.id);if(error){alert(t("couldNotDelete"));return}
+    rate=0;await load();showPiano();
   },
   async savePiano(el){
     const name=$("fName").value.trim();if(!name){alert(t("nameNeeded"));return}
     el.disabled=true;
     try{
-      const id=newId();let photo_url=null;
-      if(photo){const path=`${VID}/piano-${Date.now()}.jpg`,up=await sb.storage.from("photos").upload(path,photo,{contentType:"image/jpeg"});if(up.error)throw up.error;photo_url=sb.storage.from("photos").getPublicUrl(path).data.publicUrl}
-      const row={id,name,description:$("fDesc").value.trim()||null,lat:pending.lat,lng:pending.lng,creator:VID,author:profile.name||null,photo_url};
+      const id=newId(),row={id,name,description:$("fDesc").value.trim()||null,lat:pending.lat,lng:pending.lng,user_id:user.id};
+      if(photo)row.photo_url=await upload(photo,`piano-${Date.now()}.jpg`);
       const {error}=await sb.from("places").insert(row);if(error)throw error;
-      mineIds.push(id);SV("mine",mineIds);pianos.push({...row,yes:0,no:0});pending=null;photo=null;openPiano(id);toast(t("addedToast"));load();
+      pianos.push({...row,yes:0,no:0});pending=null;photo=null;openPiano(id);toast(t("addedToast"));load();
     }catch(e){alert(t("couldNotSave"));el.disabled=false;console.error(e)}
   },
   async delPiano(){
     if(!confirm(t("confDelPiano")))return;
-    const {error}=await sb.rpc("delete_my_place",{p_id:sel,p_voter:VID});if(error){alert(t("couldNotDelete"));return}
-    mineIds=mineIds.filter(i=>i!==sel);SV("mine",mineIds);pianos=pianos.filter(p=>p.id!==sel);closeSheet();load();
+    const {error}=await sb.from("places").delete().eq("id",sel);if(error){alert(t("couldNotDelete"));return}
+    pianos=pianos.filter(p=>p.id!==sel);closeSheet();load();
   },
-  async saveSettings(){
-    profile.name=$("sName").value.trim();profile.bio=$("sBio").value.trim();
-    if(photo)profile.avatar=await toData(photo);
-    SV("profile",profile);photo=null;setAcct();toast(t("saved"));showMenu();
-  }
+  async saveSettings(el){
+    const name=$("sName").value.trim();
+    if(name.length<3)return say("sMsg",t("nameShort"));
+    el.disabled=true;
+    try{
+      const patch={username:name,bio:$("sBio").value.trim()||null,show_visited:$("sVis").checked};
+      if(photo)patch.avatar_url=await upload(photo,`avatar-${Date.now()}.jpg`);
+      const {data,error}=await sb.from("profiles").update(patch).eq("id",user.id).select().single();if(error)throw error;
+      profiles[user.id]=data;photo=null;setAcct();toast(t("saved"));showMenu();
+    }catch(e){say("sMsg",e&&e.code==="23505"?t("taken"):t("couldNotSave"));el.disabled=false}
+  },
+  async authGo(el){
+    const em=$("aEmail").value.trim(),pw=$("aPass").value,back=location.origin+location.pathname;
+    if(!em)return say("aMsg",t("enterEmail"));
+    if(authMode==="up"&&pw.length<8)return say("aMsg",t("pw8"));
+    if(!pw)return say("aMsg",t("enterCreds"));
+    el.disabled=true;let res;
+    try{
+      if(authMode==="in")res=await sb.auth.signInWithPassword({email:em,password:pw});
+      else{
+        const nm=$("aName").value.trim();
+        if(nm.length<3){el.disabled=false;return say("aMsg",t("nameShort"))}
+        if(pw!==$("aPass2").value){el.disabled=false;return say("aMsg",t("pwMismatch"))}
+        const c=await sb.from("profiles").select("id").eq("username_key",norm(nm));
+        if(c.data&&c.data.length){el.disabled=false;return say("aMsg",t("taken"))}
+        res=await sb.auth.signUp({email:em,password:pw,options:{data:{name:nm},emailRedirectTo:back}});
+      }
+    }catch(e){res={error:e}}
+    el.disabled=false;
+    if(res.error)return say("aMsg",authErr(res.error.message));
+    if(authMode==="up"&&res.data&&!res.data.session){authMode="in";showAuth(t("created"))}
+  },
+  authSwap:()=>{authMode=authMode==="in"?"up":"in";showAuth()},
+  async oauth(el){const {error}=await sb.auth.signInWithOAuth({provider:el.dataset.p,options:{redirectTo:location.origin+location.pathname}});if(error)say("aMsg",authErr(error.message))},
+  async migrate(el){
+    const pw=$("mPass").value;if(pw.length<8)return say("aMsg",t("pw8"));if(pw!==$("mPass2").value)return say("aMsg",t("pwMismatch"));
+    el.disabled=true;
+    try{
+      const u=await sb.auth.updateUser({password:pw});if(u.error)throw u.error;
+      const {data,error}=await sb.from("profiles").update({migrated_at:new Date().toISOString()}).eq("id",user.id).select().single();if(error)throw error;
+      profiles[user.id]=data;closeModal();setAcct();toast(t("migDone"));
+      if(afterAuth){const f=afterAuth;afterAuth=null;f()}
+    }catch(e){say("aMsg",authErr((e&&e.message)||""));el.disabled=false}
+  },
+  async signout2(){await sb.auth.signOut();closeModal()},
+  async forgot(){const em=$("aEmail").value.trim();if(!em)return say("aMsg",t("enterEmail"));
+    const {error}=await sb.auth.resetPasswordForEmail(em,{redirectTo:location.origin+location.pathname});say("aMsg",error?authErr(error.message):t("resetSent"))},
+  async newPw(){const pw=$("nPass").value;if(pw.length<8)return say("aMsg",t("pw8"));
+    const {error}=await sb.auth.updateUser({password:pw});if(error)return say("aMsg",authErr(error.message));closeModal();toast(t("pwUpdated"))}
 };
-$("sheet").addEventListener("click",e=>{const el=e.target.closest("[data-act]");if(!el)return;if(el.tagName==="A")e.preventDefault();const f=acts[el.dataset.act];if(f)f(el)});
+function dispatch(e){const el=e.target.closest("[data-act]");if(!el)return;if(el.tagName==="A")e.preventDefault();const f=acts[el.dataset.act];if(f)f(el)}
+$("sheet").addEventListener("click",dispatch);
+$("modal").addEventListener("click",e=>{if(e.target.id==="modal"){if(!$("modal").classList.contains("locked"))closeModal()}else dispatch(e)});
+$("modal").addEventListener("keydown",e=>{if(e.key==="Enter"&&e.target.tagName==="INPUT"){const b=$("modal").querySelector('[data-act="authGo"],[data-act="newPw"],[data-act="migrate"]');if(b)b.click()}if(e.key==="Escape"&&!$("modal").classList.contains("locked"))closeModal()});
 $("sheet").addEventListener("change",async e=>{
   const x=e.target;if(!x.matches||!x.matches("[data-photo]")||!x.files||!x.files[0])return;
   const isAv=x.dataset.photo==="avatar";
-  try{photo=await resize(x.files[0],isAv?240:1280);const url=URL.createObjectURL(photo);
+  try{photo=await resize(x.files[0],isAv?320:1280);const url=URL.createObjectURL(photo);
     if(isAv)$("avp").innerHTML=`<span class="av" style="width:64px;height:64px"><img src="${url}" alt=""></span>`;
     else{const pv=$("pv");pv.src=url;pv.hidden=false}}
   catch(err){alert(t("imgErr"))}
 });
-$("acct").onclick=showMenu;
+$("acct").onclick=()=>user?showMenu():needAuth();
 $("prefs").onclick=showPrefs;
 $("iLang").onclick=()=>setLang(lang()==="en"?"pt":"en");
 $("iTheme").onclick=()=>{const o=["system","light","dark"];setTheme(o[(o.indexOf(theme)+1)%3])};
 
-// ===== add a piano: move the map, confirm =====
-function placing(on){$("cross").style.display=on?"block":"none";$("pbar").style.display=on?"block":"none";document.querySelector(".fabs").style.display=on?"none":"flex";if(on){closeSheet();if(map.getZoom()<18)map.setZoom(19)}}
-$("add").onclick=()=>placing(true);
+// ===== add a piano: needs an account; move the map, confirm =====
+function placing(on){$("cross").style.display=on?"block":"none";$("pbar").style.display=on?"block":"none";document.querySelector(".fabs").style.display=on?"none":"flex";$("radio").style.display=on?"none":"";$("rp").hidden=true;if(on){closeSheet();if(map.getZoom()<18)map.setZoom(19)}}
+$("add").onclick=()=>{if(!needAuth(t("needAdd"),()=>placing(true)))return;placing(true)};
 $("pNo").onclick=()=>placing(false);
 $("pOk").onclick=()=>{const c=map.getCenter();pending={lat:c.lat,lng:c.lng};photo=null;placing(false);mode("form");
   sheet(`<h2>${t("newPiano")}</h2><div class="mut">${c.lat.toFixed(5)}, ${c.lng.toFixed(5)} · ${t("redNote")}</div>
@@ -450,11 +587,67 @@ $("ibGo").onclick=install;$("iInstall").onclick=install;
 $("ibNo").onclick=()=>{localStorage.setItem("pm_ib","1");$("ib").hidden=true};
 if("serviceWorker" in navigator&&/^https?:/.test(location.protocol))navigator.serviceWorker.register("sw.js").catch(()=>{});
 
+// ===== radio: classical piano (free recordings from Wikimedia Commons) =====
+const TRACKS=[{"t": "Grande valse brillante, Op. 18", "c": "Chopin", "p": "Olga Gurevich", "l": "CC0", "syn": false, "u": ["https://upload.wikimedia.org/wikipedia/commons/1/18/Chopin_-_Grande_valse_brillante_in_E_flat_major%2C_Op._18.ogg", "https://commons.wikimedia.org/wiki/Special:FilePath/Chopin_-_Grande_valse_brillante_in_E_flat_major%2C_Op._18.ogg"], "m": "https://upload.wikimedia.org/wikipedia/commons/transcoded/1/18/Chopin_-_Grande_valse_brillante_in_E_flat_major%2C_Op._18.ogg/Chopin_-_Grande_valse_brillante_in_E_flat_major%2C_Op._18.ogg.mp3", "page": "https://commons.wikimedia.org/wiki/File:Chopin_-_Grande_valse_brillante_in_E_flat_major%2C_Op._18.ogg"}, {"t": "Waltz in A-flat major, Op. 42", "c": "Chopin", "p": "Olga Gurevich", "l": "Public domain", "syn": false, "u": ["https://upload.wikimedia.org/wikipedia/commons/1/15/Chopin_Waltz_in_A_flat_major_Op_42.ogg", "https://commons.wikimedia.org/wiki/Special:FilePath/Chopin_Waltz_in_A_flat_major_Op_42.ogg"], "m": "https://upload.wikimedia.org/wikipedia/commons/transcoded/1/15/Chopin_Waltz_in_A_flat_major_Op_42.ogg/Chopin_Waltz_in_A_flat_major_Op_42.ogg.mp3", "page": "https://commons.wikimedia.org/wiki/File:Chopin_Waltz_in_A_flat_major_Op_42.ogg"}, {"t": "Nocturne Op. 62 No. 2", "c": "Chopin", "p": "Musopen", "l": "Public domain", "syn": false, "u": ["https://upload.wikimedia.org/wikipedia/commons/2/2c/Frederic_Chopin_-_nocturne_no._2_in_e_flat_major%2C_op._62.ogg", "https://commons.wikimedia.org/wiki/Special:FilePath/Frederic_Chopin_-_nocturne_no._2_in_e_flat_major%2C_op._62.ogg"], "m": "https://upload.wikimedia.org/wikipedia/commons/transcoded/2/2c/Frederic_Chopin_-_nocturne_no._2_in_e_flat_major%2C_op._62.ogg/Frederic_Chopin_-_nocturne_no._2_in_e_flat_major%2C_op._62.ogg.mp3", "page": "https://commons.wikimedia.org/wiki/File:Frederic_Chopin_-_nocturne_no._2_in_e_flat_major%2C_op._62.ogg"}, {"t": "Nocturne Op. 9 No. 2", "c": "Chopin", "p": "", "l": "CC BY-SA", "syn": false, "u": ["https://upload.wikimedia.org/wikipedia/commons/5/5c/Frederic_Chopin_-_Nocturne_Eb_major_Opus_9%2C_number_2.ogg", "https://commons.wikimedia.org/wiki/Special:FilePath/Frederic_Chopin_-_Nocturne_Eb_major_Opus_9%2C_number_2.ogg"], "m": "https://upload.wikimedia.org/wikipedia/commons/transcoded/5/5c/Frederic_Chopin_-_Nocturne_Eb_major_Opus_9%2C_number_2.ogg/Frederic_Chopin_-_Nocturne_Eb_major_Opus_9%2C_number_2.ogg.mp3", "page": "https://commons.wikimedia.org/wiki/File:Frederic_Chopin_-_Nocturne_Eb_major_Opus_9%2C_number_2.ogg"}, {"t": "Étude Op. 25 No. 12", "c": "Chopin", "p": "", "l": "", "syn": false, "u": ["https://upload.wikimedia.org/wikipedia/commons/3/32/Frederic_Chopin_-_etude_no._12_in_c_minor%2C_op._25.ogg", "https://commons.wikimedia.org/wiki/Special:FilePath/Frederic_Chopin_-_etude_no._12_in_c_minor%2C_op._25.ogg"], "m": "https://upload.wikimedia.org/wikipedia/commons/transcoded/3/32/Frederic_Chopin_-_etude_no._12_in_c_minor%2C_op._25.ogg/Frederic_Chopin_-_etude_no._12_in_c_minor%2C_op._25.ogg.mp3", "page": "https://commons.wikimedia.org/wiki/File:Frederic_Chopin_-_etude_no._12_in_c_minor%2C_op._25.ogg"}, {"t": "Étude Op. 25 No. 7", "c": "Chopin", "p": "La Pianista", "l": "", "syn": false, "u": ["https://upload.wikimedia.org/wikipedia/commons/2/23/Chopin_-_Etude_Op._25%2C_No._7.ogg", "https://commons.wikimedia.org/wiki/Special:FilePath/Chopin_-_Etude_Op._25%2C_No._7.ogg"], "m": "https://upload.wikimedia.org/wikipedia/commons/transcoded/2/23/Chopin_-_Etude_Op._25%2C_No._7.ogg/Chopin_-_Etude_Op._25%2C_No._7.ogg.mp3", "page": "https://commons.wikimedia.org/wiki/File:Chopin_-_Etude_Op._25%2C_No._7.ogg"}, {"t": "Étude Op. 10 No. 3", "c": "Chopin", "p": "", "l": "", "syn": false, "u": ["https://upload.wikimedia.org/wikipedia/commons/0/00/Chopin_Etude_op_10_n_3.oga", "https://commons.wikimedia.org/wiki/Special:FilePath/Chopin_Etude_op_10_n_3.oga"], "m": "https://upload.wikimedia.org/wikipedia/commons/transcoded/0/00/Chopin_Etude_op_10_n_3.oga/Chopin_Etude_op_10_n_3.oga.mp3", "page": "https://commons.wikimedia.org/wiki/File:Chopin_Etude_op_10_n_3.oga"}, {"t": "Mazurka Op. 33", "c": "Chopin", "p": "Lubka Kolessa", "l": "Public domain", "syn": false, "u": ["https://upload.wikimedia.org/wikipedia/commons/9/91/Chopin_-_Mazurka_D_major_Op.33_no._2_%28or_3%29_played_by_Lubka_Kolessa.oga", "https://commons.wikimedia.org/wiki/Special:FilePath/Chopin_-_Mazurka_D_major_Op.33_no._2_%28or_3%29_played_by_Lubka_Kolessa.oga"], "m": "https://upload.wikimedia.org/wikipedia/commons/transcoded/9/91/Chopin_-_Mazurka_D_major_Op.33_no._2_%28or_3%29_played_by_Lubka_Kolessa.oga/Chopin_-_Mazurka_D_major_Op.33_no._2_%28or_3%29_played_by_Lubka_Kolessa.oga.mp3", "page": "https://commons.wikimedia.org/wiki/File:Chopin_-_Mazurka_D_major_Op.33_no._2_%28or_3%29_played_by_Lubka_Kolessa.oga"}, {"t": "Waltz in E minor, B. 56", "c": "Chopin", "p": "", "l": "CC0", "syn": false, "u": ["https://upload.wikimedia.org/wikipedia/commons/2/22/Chopin_-_Waltz_in_E_minor%2C_B_56.mp3", "https://commons.wikimedia.org/wiki/Special:FilePath/Chopin_-_Waltz_in_E_minor%2C_B_56.mp3"], "m": null, "page": "https://commons.wikimedia.org/wiki/File:Chopin_-_Waltz_in_E_minor%2C_B_56.mp3"}, {"t": "Étude-Tableau Op. 39 No. 5", "c": "Rachmaninoff", "p": "Karine Gilanyan (Musopen)", "l": "Public domain", "syn": false, "u": ["https://upload.wikimedia.org/wikipedia/commons/8/8a/Sergei_Rachmaninoff_-_Etudes-Tableaux%2C_Op._39%2C_No._5.oga", "https://commons.wikimedia.org/wiki/Special:FilePath/Sergei_Rachmaninoff_-_Etudes-Tableaux%2C_Op._39%2C_No._5.oga"], "m": "https://upload.wikimedia.org/wikipedia/commons/transcoded/8/8a/Sergei_Rachmaninoff_-_Etudes-Tableaux%2C_Op._39%2C_No._5.oga/Sergei_Rachmaninoff_-_Etudes-Tableaux%2C_Op._39%2C_No._5.oga.mp3", "page": "https://commons.wikimedia.org/wiki/File:Sergei_Rachmaninoff_-_Etudes-Tableaux%2C_Op._39%2C_No._5.oga"}, {"t": "Prelude in B minor, Op. 32 No. 10", "c": "Rachmaninoff", "p": "La Pianista", "l": "CC BY 3.0", "syn": false, "u": ["https://upload.wikimedia.org/wikipedia/commons/4/4e/Rachmaninoff_Prelude_in_B_Minor%2C_Op._32%2C_No._10.oga", "https://commons.wikimedia.org/wiki/Special:FilePath/Rachmaninoff_Prelude_in_B_Minor%2C_Op._32%2C_No._10.oga"], "m": "https://upload.wikimedia.org/wikipedia/commons/transcoded/4/4e/Rachmaninoff_Prelude_in_B_Minor%2C_Op._32%2C_No._10.oga/Rachmaninoff_Prelude_in_B_Minor%2C_Op._32%2C_No._10.oga.mp3", "page": "https://commons.wikimedia.org/wiki/File:Rachmaninoff_Prelude_in_B_Minor%2C_Op._32%2C_No._10.oga"}, {"t": "Chopin: Waltz in E-flat major (1921)", "c": "Rachmaninoff", "p": "Sergei Rachmaninoff", "l": "Public domain", "syn": false, "u": ["https://upload.wikimedia.org/wikipedia/commons/7/7f/Rachmaninoff_-_Chopin_Waltz_E_flat_major_-_Steinway_grand_piano.ogg", "https://commons.wikimedia.org/wiki/Special:FilePath/Rachmaninoff_-_Chopin_Waltz_E_flat_major_-_Steinway_grand_piano.ogg"], "m": "https://upload.wikimedia.org/wikipedia/commons/transcoded/7/7f/Rachmaninoff_-_Chopin_Waltz_E_flat_major_-_Steinway_grand_piano.ogg/Rachmaninoff_-_Chopin_Waltz_E_flat_major_-_Steinway_grand_piano.ogg.mp3", "page": "https://commons.wikimedia.org/wiki/File:Rachmaninoff_-_Chopin_Waltz_E_flat_major_-_Steinway_grand_piano.ogg"}, {"t": "Liszt: Hungarian Rhapsody No. 2 (1919)", "c": "Rachmaninoff", "p": "Sergei Rachmaninoff", "l": "Public domain", "syn": false, "u": ["https://upload.wikimedia.org/wikipedia/commons/3/37/Second_Hungarian_Rhapsody.ogg", "https://commons.wikimedia.org/wiki/Special:FilePath/Second_Hungarian_Rhapsody.ogg"], "m": "https://upload.wikimedia.org/wikipedia/commons/transcoded/3/37/Second_Hungarian_Rhapsody.ogg/Second_Hungarian_Rhapsody.ogg.mp3", "page": "https://commons.wikimedia.org/wiki/File:Second_Hungarian_Rhapsody.ogg"}, {"t": "Prelude Op. 67 No. 1", "c": "Scriabin", "p": "Musopen", "l": "Public domain", "syn": false, "u": ["https://upload.wikimedia.org/wikipedia/commons/e/e5/Alexander_Scriabin_-_prelude_no._1%2C_op._67.ogg", "https://commons.wikimedia.org/wiki/Special:FilePath/Alexander_Scriabin_-_prelude_no._1%2C_op._67.ogg"], "m": "https://upload.wikimedia.org/wikipedia/commons/transcoded/e/e5/Alexander_Scriabin_-_prelude_no._1%2C_op._67.ogg/Alexander_Scriabin_-_prelude_no._1%2C_op._67.ogg.mp3", "page": "https://commons.wikimedia.org/wiki/File:Alexander_Scriabin_-_prelude_no._1%2C_op._67.ogg"}, {"t": "Étude Op. 8 No. 12", "c": "Scriabin", "p": "Awadagin Pratt", "l": "Public domain / CC BY", "syn": false, "u": ["https://upload.wikimedia.org/wikipedia/commons/8/81/20091104_Awadagin_Pratt_-_Scriabin%2C_%C3%89tude_Op._8_No._12.ogg", "https://commons.wikimedia.org/wiki/Special:FilePath/20091104_Awadagin_Pratt_-_Scriabin%2C_%C3%89tude_Op._8_No._12.ogg"], "m": "https://upload.wikimedia.org/wikipedia/commons/transcoded/8/81/20091104_Awadagin_Pratt_-_Scriabin%2C_%C3%89tude_Op._8_No._12.ogg/20091104_Awadagin_Pratt_-_Scriabin%2C_%C3%89tude_Op._8_No._12.ogg.mp3", "page": "https://commons.wikimedia.org/wiki/File:20091104_Awadagin_Pratt_-_Scriabin%2C_%C3%89tude_Op._8_No._12.ogg"}, {"t": "Liebesträume No. 3", "c": "Liszt", "p": "Pandora Records / Al Goldstein", "l": "CC BY-SA", "syn": false, "u": ["https://upload.wikimedia.org/wikipedia/commons/0/02/Franz_Liszt_-_Liebestraum%2C_Ab_Major.ogg", "https://commons.wikimedia.org/wiki/Special:FilePath/Franz_Liszt_-_Liebestraum%2C_Ab_Major.ogg"], "m": "https://upload.wikimedia.org/wikipedia/commons/transcoded/0/02/Franz_Liszt_-_Liebestraum%2C_Ab_Major.ogg/Franz_Liszt_-_Liebestraum%2C_Ab_Major.ogg.mp3", "page": "https://commons.wikimedia.org/wiki/File:Franz_Liszt_-_Liebestraum%2C_Ab_Major.ogg"}, {"t": "La Campanella", "c": "Liszt", "p": "Greiss", "l": "", "syn": false, "u": ["https://upload.wikimedia.org/wikipedia/commons/c/ca/Liszt-La_Campanella-Greiss.ogg", "https://commons.wikimedia.org/wiki/Special:FilePath/Liszt-La_Campanella-Greiss.ogg"], "m": "https://upload.wikimedia.org/wikipedia/commons/transcoded/c/ca/Liszt-La_Campanella-Greiss.ogg/Liszt-La_Campanella-Greiss.ogg.mp3", "page": "https://commons.wikimedia.org/wiki/File:Liszt-La_Campanella-Greiss.ogg"}, {"t": "Vallée d’Obermann", "c": "Liszt", "p": "", "l": "", "syn": false, "u": ["https://upload.wikimedia.org/wikipedia/commons/e/e9/Liszt_-_Vallee_d%27Obermann.ogg", "https://commons.wikimedia.org/wiki/Special:FilePath/Liszt_-_Vallee_d%27Obermann.ogg"], "m": "https://upload.wikimedia.org/wikipedia/commons/transcoded/e/e9/Liszt_-_Vallee_d%27Obermann.ogg/Liszt_-_Vallee_d%27Obermann.ogg.mp3", "page": "https://commons.wikimedia.org/wiki/File:Liszt_-_Vallee_d%27Obermann.ogg"}, {"t": "Mephisto Waltz No. 1", "c": "Liszt", "p": "", "l": "", "syn": false, "u": ["https://upload.wikimedia.org/wikipedia/commons/7/79/Liszt_-_Mephisto_Waltz_No.1.ogg", "https://commons.wikimedia.org/wiki/Special:FilePath/Liszt_-_Mephisto_Waltz_No.1.ogg"], "m": "https://upload.wikimedia.org/wikipedia/commons/transcoded/7/79/Liszt_-_Mephisto_Waltz_No.1.ogg/Liszt_-_Mephisto_Waltz_No.1.ogg.mp3", "page": "https://commons.wikimedia.org/wiki/File:Liszt_-_Mephisto_Waltz_No.1.ogg"}, {"t": "Transcendental Étude No. 10", "c": "Liszt", "p": "", "l": "", "syn": false, "u": ["https://upload.wikimedia.org/wikipedia/commons/7/79/Liszt_transcendental_etude_n10.ogg", "https://commons.wikimedia.org/wiki/Special:FilePath/Liszt_transcendental_etude_n10.ogg"], "m": "https://upload.wikimedia.org/wikipedia/commons/transcoded/7/79/Liszt_transcendental_etude_n10.ogg/Liszt_transcendental_etude_n10.ogg.mp3", "page": "https://commons.wikimedia.org/wiki/File:Liszt_transcendental_etude_n10.ogg"}, {"t": "Un sospiro", "c": "Liszt", "p": "", "l": "", "syn": false, "u": ["https://upload.wikimedia.org/wikipedia/commons/3/32/Franz_Liszt_-_Un_Sospiro_Etude%2C_Db_Major.ogg", "https://commons.wikimedia.org/wiki/Special:FilePath/Franz_Liszt_-_Un_Sospiro_Etude%2C_Db_Major.ogg"], "m": "https://upload.wikimedia.org/wikipedia/commons/transcoded/3/32/Franz_Liszt_-_Un_Sospiro_Etude%2C_Db_Major.ogg/Franz_Liszt_-_Un_Sospiro_Etude%2C_Db_Major.ogg.mp3", "page": "https://commons.wikimedia.org/wiki/File:Franz_Liszt_-_Un_Sospiro_Etude%2C_Db_Major.ogg"}, {"t": "Well-Tempered Clavier I: Prelude in C-sharp minor", "c": "Bach", "p": "Pandora Records / Al Goldstein", "l": "CC BY-SA", "syn": false, "u": ["https://upload.wikimedia.org/wikipedia/commons/9/9e/Johann_Sebastian_Bach_-_WTK1_Prelude_in_C-sharp_minor.ogg", "https://commons.wikimedia.org/wiki/Special:FilePath/Johann_Sebastian_Bach_-_WTK1_Prelude_in_C-sharp_minor.ogg"], "m": "https://upload.wikimedia.org/wikipedia/commons/transcoded/9/9e/Johann_Sebastian_Bach_-_WTK1_Prelude_in_C-sharp_minor.ogg/Johann_Sebastian_Bach_-_WTK1_Prelude_in_C-sharp_minor.ogg.mp3", "page": "https://commons.wikimedia.org/wiki/File:Johann_Sebastian_Bach_-_WTK1_Prelude_in_C-sharp_minor.ogg"}, {"t": "Piano Sonata No. 16, K. 545: Allegro", "c": "Mozart", "p": "", "l": "Public domain", "syn": true, "u": ["https://upload.wikimedia.org/wikipedia/commons/0/03/K545_allegro.ogg", "https://commons.wikimedia.org/wiki/Special:FilePath/K545_allegro.ogg"], "m": "https://upload.wikimedia.org/wikipedia/commons/transcoded/0/03/K545_allegro.ogg/K545_allegro.ogg.mp3", "page": "https://commons.wikimedia.org/wiki/File:K545_allegro.ogg"}, {"t": "Piano Sonata No. 16, K. 545: Andante", "c": "Mozart", "p": "", "l": "Public domain", "syn": true, "u": ["https://upload.wikimedia.org/wikipedia/commons/b/b8/K545_andante.ogg", "https://commons.wikimedia.org/wiki/Special:FilePath/K545_andante.ogg"], "m": "https://upload.wikimedia.org/wikipedia/commons/transcoded/b/b8/K545_andante.ogg/K545_andante.ogg.mp3", "page": "https://commons.wikimedia.org/wiki/File:K545_andante.ogg"}, {"t": "Rondo alla Turca, K. 331", "c": "Mozart", "p": "", "l": "Public domain", "syn": true, "u": ["https://upload.wikimedia.org/wikipedia/commons/b/bd/Rondo_Alla_Turka.ogg", "https://commons.wikimedia.org/wiki/Special:FilePath/Rondo_Alla_Turka.ogg"], "m": "https://upload.wikimedia.org/wikipedia/commons/transcoded/b/bd/Rondo_Alla_Turka.ogg/Rondo_Alla_Turka.ogg.mp3", "page": "https://commons.wikimedia.org/wiki/File:Rondo_Alla_Turka.ogg"}, {"t": "Moonlight Sonata, 1st movement", "c": "Beethoven", "p": "Paul Pitman (Musopen)", "l": "Public domain", "syn": false, "u": ["https://upload.wikimedia.org/wikipedia/commons/4/48/Ludwig_van_Beethoven_-_sonata_no._14_in_c_sharp_minor_%27moonlight%27%2C_op._27_no._2_-_i._adagio_sostenuto.ogg", "https://commons.wikimedia.org/wiki/Special:FilePath/Ludwig_van_Beethoven_-_sonata_no._14_in_c_sharp_minor_%27moonlight%27%2C_op._27_no._2_-_i._adagio_sostenuto.ogg"], "m": "https://upload.wikimedia.org/wikipedia/commons/transcoded/4/48/Ludwig_van_Beethoven_-_sonata_no._14_in_c_sharp_minor_%27moonlight%27%2C_op._27_no._2_-_i._adagio_sostenuto.ogg/Ludwig_van_Beethoven_-_sonata_no._14_in_c_sharp_minor_%27moonlight%27%2C_op._27_no._2_-_i._adagio_sostenuto.ogg.mp3", "page": "https://commons.wikimedia.org/wiki/File:Ludwig_van_Beethoven_-_sonata_no._14_in_c_sharp_minor_%27moonlight%27%2C_op._27_no._2_-_i._adagio_sostenuto.ogg"}, {"t": "Moonlight Sonata, 2nd movement", "c": "Beethoven", "p": "Bernd Krueger (piano-midi.de)", "l": "CC BY-SA", "syn": false, "u": ["https://upload.wikimedia.org/wikipedia/commons/4/47/Beethoven_Moonlight_2nd_movement.ogg", "https://commons.wikimedia.org/wiki/Special:FilePath/Beethoven_Moonlight_2nd_movement.ogg"], "m": "https://upload.wikimedia.org/wikipedia/commons/transcoded/4/47/Beethoven_Moonlight_2nd_movement.ogg/Beethoven_Moonlight_2nd_movement.ogg.mp3", "page": "https://commons.wikimedia.org/wiki/File:Beethoven_Moonlight_2nd_movement.ogg"}, {"t": "Moonlight Sonata, 3rd movement", "c": "Beethoven", "p": "Bernd Krueger (piano-midi.de)", "l": "CC BY-SA", "syn": false, "u": ["https://upload.wikimedia.org/wikipedia/commons/d/d4/Beethoven_Moonlight_3rd_movement.ogg", "https://commons.wikimedia.org/wiki/Special:FilePath/Beethoven_Moonlight_3rd_movement.ogg"], "m": "https://upload.wikimedia.org/wikipedia/commons/transcoded/d/d4/Beethoven_Moonlight_3rd_movement.ogg/Beethoven_Moonlight_3rd_movement.ogg.mp3", "page": "https://commons.wikimedia.org/wiki/File:Beethoven_Moonlight_3rd_movement.ogg"}, {"t": "Für Elise", "c": "Beethoven", "p": "", "l": "", "syn": false, "u": ["https://upload.wikimedia.org/wikipedia/commons/8/8f/Fur_Elise.ogg", "https://commons.wikimedia.org/wiki/Special:FilePath/Fur_Elise.ogg"], "m": "https://upload.wikimedia.org/wikipedia/commons/transcoded/8/8f/Fur_Elise.ogg/Fur_Elise.ogg.mp3", "page": "https://commons.wikimedia.org/wiki/File:Fur_Elise.ogg"}, {"t": "Impromptu D. 935 No. 2", "c": "Schubert", "p": "", "l": "Free licence", "syn": false, "u": ["https://upload.wikimedia.org/wikipedia/commons/7/74/Schubert-D.935-2.ogg", "https://commons.wikimedia.org/wiki/Special:FilePath/Schubert-D.935-2.ogg"], "m": "https://upload.wikimedia.org/wikipedia/commons/transcoded/7/74/Schubert-D.935-2.ogg/Schubert-D.935-2.ogg.mp3", "page": "https://commons.wikimedia.org/wiki/File:Schubert-D.935-2.ogg"}, {"t": "La fille aux cheveux de lin", "c": "Debussy", "p": "Patrizia Prati", "l": "CC BY-SA", "syn": false, "u": ["https://upload.wikimedia.org/wikipedia/commons/8/8d/Claude_Debussy_-_I_Livre_Prelude_VIII..._%28...La_fille_aux_cheveux_de_lin%29_-_Patrizia_Prati.ogg", "https://commons.wikimedia.org/wiki/Special:FilePath/Claude_Debussy_-_I_Livre_Prelude_VIII..._%28...La_fille_aux_cheveux_de_lin%29_-_Patrizia_Prati.ogg"], "m": "https://upload.wikimedia.org/wikipedia/commons/transcoded/8/8d/Claude_Debussy_-_I_Livre_Prelude_VIII..._%28...La_fille_aux_cheveux_de_lin%29_-_Patrizia_Prati.ogg/Claude_Debussy_-_I_Livre_Prelude_VIII..._%28...La_fille_aux_cheveux_de_lin%29_-_Patrizia_Prati.ogg.mp3", "page": "https://commons.wikimedia.org/wiki/File:Claude_Debussy_-_I_Livre_Prelude_VIII..._%28...La_fille_aux_cheveux_de_lin%29_-_Patrizia_Prati.ogg"}];
+const Music=(()=>{
+  const a=new Audio();a.preload="none";
+  let order=[],idx=0,srcs=[],si=0,bad=0,gaveUp=false,on=localStorage.getItem("pm_music")!=="off",gesture=false;
+  const sv=localStorage.getItem("pm_vol");a.volume=sv===null?.35:Math.min(1,Math.max(0,+sv));
+  const cur=()=>TRACKS[order[idx]];
+  function shuffle(){order=TRACKS.map((_,i)=>i);for(let i=order.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[order[i],order[j]]=[order[j],order[i]]}}
+  function sources(k){const ogg=a.canPlayType('audio/ogg; codecs="vorbis"')!=="",l=[...k.u];if(k.m){ogg?l.push(k.m):l.unshift(k.m)}return l}
+  function setTrack(){const k=cur();srcs=sources(k);si=0;a.src=srcs[0];ui();
+    if("mediaSession" in navigator&&window.MediaMetadata){try{navigator.mediaSession.metadata=new MediaMetadata({title:k.t,artist:k.c,album:"Pianomaps"})}catch(e){}}}
+  function play(){const p=a.play();if(p&&p.catch)p.catch(()=>{})}
+  function next(){idx=(idx+1)%order.length;setTrack();if(on&&gesture)play()}
+  function toggle(){on=!on;localStorage.setItem("pm_music",on?"on":"off");gesture=true;if(on)play();else a.pause();ui()}
+  function setVol(v){a.volume=Math.min(1,Math.max(0,v/100));localStorage.setItem("pm_vol",String(a.volume));ui()}
+  function start(){gesture=true;if(on&&a.paused&&!gaveUp)play()}
+  function ui(){
+    const k=order.length?cur():null,playing=!a.paused&&!a.ended;
+    const r=$("radio"),pl=$("rPlay");if(!r)return;
+    r.classList.toggle("playing",playing);
+    pl.innerHTML=playing?'<svg viewBox="0 0 24 24"><path d="M8 5v14M16 5v14"/></svg>':'<svg viewBox="0 0 24 24"><path d="M7 4.5v15l12-7.5-12-7.5Z"/></svg>';
+    pl.setAttribute("aria-label",playing?t("pause"):t("play"));
+    $("rTitle").textContent=gaveUp?t("musicUnavailable"):(k?k.t:"");
+    $("rSub").textContent=gaveUp?"":(k?[k.c,k.p].filter(Boolean).join(" · "):"");
+    $("rVol").value=Math.round(a.volume*100);
+    $("rState").textContent=on?t("musicOn"):t("musicOff");
+  }
+  a.addEventListener("error",()=>{
+    if(si<srcs.length-1){a.src=srcs[++si];if(on&&gesture)play();return}
+    if(++bad>=TRACKS.length){gaveUp=true;ui();return}
+    next();
+  });
+  a.addEventListener("playing",()=>{bad=0;ui()});
+  a.addEventListener("pause",ui);a.addEventListener("ended",()=>next());
+  if("mediaSession" in navigator){try{navigator.mediaSession.setActionHandler("nexttrack",next);navigator.mediaSession.setActionHandler("play",()=>{if(!on)toggle();else play()});navigator.mediaSession.setActionHandler("pause",()=>a.pause())}catch(e){}}
+  shuffle();
+  return{next,toggle,setVol,start,ui,setTrack,audio:a,get on(){return on}};
+})();
+Music.setTrack();
+$("radio").onclick=()=>{const p=$("rp");p.hidden=!p.hidden;Music.ui()};
+$("rPlay").onclick=()=>Music.toggle();
+$("rNext").onclick=()=>{Music.next();Music.start()};
+$("rVol").oninput=e=>Music.setVol(+e.target.value);
+$("rCred").onclick=()=>{$("rp").hidden=true;showCredits()};
+document.addEventListener("click",e=>{if(!$("rp").hidden&&!e.target.closest("#rp,#radio"))$("rp").hidden=true});
+// browsers only allow sound after a tap: start the music on the first tap anywhere
+const firstTap=()=>{["click","touchend","keydown"].forEach(ev=>removeEventListener(ev,firstTap,true));Music.start()};
+["click","touchend","keydown"].forEach(ev=>addEventListener(ev,firstTap,true));
+
 // ===== start =====
 applyTheme();applyLang();setAcct();draw();
 if(SB){
-  load();
-  setInterval(()=>{if(!document.hidden)load()},45000);                      // other people's pianos and answers show up on their own
+  sb.auth.onAuthStateChange((ev,s)=>{
+    if(ev==="PASSWORD_RECOVERY")setTimeout(showNewPw,0);
+    if(ev==="INITIAL_SESSION"||ev==="SIGNED_IN"||ev==="SIGNED_OUT"||ev==="USER_UPDATED"){
+      const was=user;user=s?.user||null;
+      setTimeout(async()=>{if(user&&!was)closeModal();await load();if(user&&!was&&!migrateNeeded()&&afterAuth){const f=afterAuth;afterAuth=null;f()}},0);
+    }
+  });
+  loadProviders();
+  setInterval(()=>{if(!document.hidden)load()},45000);
   document.addEventListener("visibilitychange",()=>{if(!document.hidden)load()});
 }else{
   $("setup").style.display="flex";
